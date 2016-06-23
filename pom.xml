@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <name>DFM StormFront Appliance</name>
+    <description>StormFront modules for PubSubHub and Interface</description>
+    <developers>
+        <developer>
+            <id>mjacobsen</id>
+            <name>Michael Jacobsen</name>
+            <email>mjacobsen@denverpost.com</email>
+            <organization>Digital First Media</organization>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>America/Denver</timezone>
+        </developer>
+    </developers>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.DFM.StormFront</groupId>
+    <artifactId>Appliance</artifactId>
+    <packaging>pom</packaging>
+    <version>dev</version>
+
+    <properties>
+        <Appliance.Util.version>0.2.11</Appliance.Util.version>
+        <Appliance.Model.version>0.4.2</Appliance.Model.version>
+        <Appliance.Client.version>0.2.8</Appliance.Client.version>
+        <Appliance.Adapter.version>0.2.5</Appliance.Adapter.version>
+        <Appliance.Exec.version>0.1.15</Appliance.Exec.version>
+        <Appliance.PubSubHub.version>0.10.5</Appliance.PubSubHub.version>
+        <Appliance.Interface.version>0.5.2</Appliance.Interface.version>
+        <Appliance.FixIt.version>0.1.1</Appliance.FixIt.version>
+        <Appliance.Test.version>0.2.5</Appliance.Test.version>
+    </properties>
+
+    <modules>
+        <module>Util</module>
+        <module>Model</module>
+        <module>Client</module>
+        <module>Adapter</module>
+        <module>Exec</module>
+        <module>PubSubHub</module>
+        <module>Interface</module>
+        <module>FixIt</module>
+        <module>Test</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>

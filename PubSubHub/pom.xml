@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <name>DFM StormFront PubSubHub Topology</name>
+    <description>Real-time processing of feeds using Apache Storm and Redis</description>
+    <url>http://ec2-52-32-255-112.us-west-2.compute.amazonaws.com:8080/index.html</url>
+    <developers>
+        <developer>
+            <id>mjacobsen</id>
+            <name>Michael Jacobsen</name>
+            <email>mjacobsen@denverpost.com</email>
+            <organization>Digital First Media</organization>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>America/Denver</timezone>
+        </developer>
+    </developers>
+
+    <parent>
+        <artifactId>Appliance</artifactId>
+        <groupId>com.DFM.StormFront</groupId>
+        <version>dev</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>PubSubHub</artifactId>
+    <version>${Appliance.PubSubHub.version}</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-core</artifactId>
+            <version>0.10.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Util</artifactId>
+            <version>${Appliance.Util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Client</artifactId>
+            <version>${Appliance.Client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Model</artifactId>
+            <version>${Appliance.Model.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Exec</artifactId>
+            <version>${Appliance.Exec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Adapter</artifactId>
+            <version>${Appliance.Adapter.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.clerezza.ext</groupId>
+            <artifactId>org.json.simple</artifactId>
+            <version>0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.studio</groupId>
+            <artifactId>org.apache.commons.lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.studio</groupId>
+            <artifactId>org.apache.commons.pool</artifactId>
+            <version>1.6</version>
+        </dependency>
+    </dependencies>
+
+
+    <repositories>
+        <repository>
+            <id>clojars.org</id>
+            <url>http://clojars.org/repo</url>
+        </repository>
+        <repository>
+            <id>maven.org</id>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass />
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

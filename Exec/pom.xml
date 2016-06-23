@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <name>DFM StormFront Exec Library</name>
+    <description>Exec is a library to reliably execute common processes from within StormFront</description>
+    <developers>
+        <developer>
+            <id>mjacobsen</id>
+            <name>Michael Jacobsen</name>
+            <email>mjacobsen@denverpost.com</email>
+            <organization>Digital First Media</organization>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>America/Denver</timezone>
+        </developer>
+    </developers>
+
+
+    <parent>
+        <groupId>com.DFM.StormFront</groupId>
+        <artifactId>Appliance</artifactId>
+        <version>dev</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>Exec</artifactId>
+    <version>${Appliance.Exec.version}</version>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Model</artifactId>
+            <version>${Appliance.Model.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Client</artifactId>
+            <version>${Appliance.Client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.DFM.StormFront</groupId>
+            <artifactId>Adapter</artifactId>
+            <version>${Appliance.Adapter.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass />
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
