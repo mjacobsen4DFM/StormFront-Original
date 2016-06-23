@@ -45,3 +45,28 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+.idea
+target/*
+out/*
+servers/*
+RemoteSystemsTempFiles/*
+*/target/*
+*.class
+*.iml
+*.project
+*.zip
+*.jar
+*.war
+Test/
+FixIt/
+compile
+redis.properties
+PubSubHub/.flattened-pom.xml
+Resources/sources/*.*
+*.txt
+*.jar
+*.war
+*.flattened-pom.xml
+.flattened-pom.xml
+PubSubHub/src/main/java/com/DFM/StormFront/PubSubHub/Storm/Topology/PubSubHubTopology.java
