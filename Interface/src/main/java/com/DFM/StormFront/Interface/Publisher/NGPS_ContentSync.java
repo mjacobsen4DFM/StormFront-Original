@@ -79,22 +79,19 @@ public class NGPS_ContentSync {
     }
 
     private static ContentSync getContentSync(String incomingString) throws Exception {
-        String content = incomingString;
         //Convert the JSON to the ContentSync object
-
-        FileUtil.printFile(FileUtil.getLogPath(), "ContentSync", "raw", "test", "txt", content);
         ContentSync contentSync = new ContentSync();
-        if (JsonUtil.isWellFormed(content)) {
+        if (JsonUtil.isWellFormed(incomingString)) {
 /*
             JSONObject jo = new JSONObject(content);
             String article = jo.get("article").toString();
 */
-            String xml = XmlJsonUtil.JsonToXml(content);
+            String xml = XmlJsonUtil.JsonToXml(incomingString);
             xml = String.format("<articles>%s</articles>", xml);
             return contentSync.fromXML(xml);
-        } else if (XmlUtil.isWellFormed(content)) {
-            return contentSync.fromXML(content);
+        } else if (XmlUtil.isWellFormed(incomingString)) {
+            return contentSync.fromXML(incomingString);
         }
-        throw new Exception("Malformed input: " + content);
+        throw new Exception("Malformed input: " + incomingString);
     }
 }
