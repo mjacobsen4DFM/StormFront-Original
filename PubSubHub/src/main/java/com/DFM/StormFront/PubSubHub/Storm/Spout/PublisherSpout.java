@@ -201,7 +201,7 @@ public class PublisherSpout extends BaseRichSpout {
 
     @Override
     public void fail(Object pubKey) {
-        RedisLogUtil.logError("PublisherSpout-> FAIL msgId = " + pubKey.toString(), _redisClient);
+        RedisLogUtil.logFail("PublisherSpout-> FAIL msgId = " + pubKey.toString(), _redisClient);
         _pubQueue.add((String) pubKey);
     }
 

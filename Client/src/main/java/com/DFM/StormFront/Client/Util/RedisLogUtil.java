@@ -38,4 +38,15 @@ public class RedisLogUtil {
         }
     }
 
+    public static void logFail(String msg, RedisClient redisClient) {
+        try {
+            msg = (msg == null) ? "No error message to log." : msg;
+            LogUtil.log(msg);
+            String hostname = SystemUtil.getHostname();
+            String time = new Date().toString().replace(":", "-");
+            redisClient.set("fails:" + hostname + ":" + time, msg);
+        } catch (Exception ignored) {
+        }
+    }
+
 }
