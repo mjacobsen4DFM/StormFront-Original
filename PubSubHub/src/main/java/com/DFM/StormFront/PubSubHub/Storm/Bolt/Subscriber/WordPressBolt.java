@@ -114,7 +114,7 @@ public class WordPressBolt extends BaseRichBolt {
 
         try {
             if(_bNewChanged) {
-                resultMap = wp.Exec();
+                resultMap = wp.Post();
             } else {
                 resultMap = wp.Get();
             }

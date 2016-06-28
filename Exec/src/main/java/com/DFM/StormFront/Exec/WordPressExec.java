@@ -72,7 +72,11 @@ public class WordPressExec {
     }
 
     public Map<String, String> Exec() throws Exception {
-        operation = "start";
+        return Post();
+    }
+
+    public Map<String, String> Post() throws Exception {
+        operation = "Post() start";
         Map<String, String> resultMap = new HashMap<>();
         String wpPostId = "";
         String storyTitle;
@@ -87,20 +91,21 @@ public class WordPressExec {
         String mediaBaseEndpoint = baseURI + "wp/v2/media/";
         postLocation = postBaseEndpoint;
 
-        operation = "Transform XML";
+        operation = "Post() Transform XML";
         String xsltPath = _xsltRootPath + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
         String wppXML = XmlUtil.transform(_story, xsltPath);
         WordPressPost wpp = WordPressPost.fromXML(wppXML);
 
         storyTitle = wpp.getTitle();
 
-        operation = "Get Normalize data";
+        operation = "Post() Get Normalized data";
         storyDataMap = this.getStoryData(wpp, wppXML);
         ArrayList<Integer> categories = new ArrayList<>();
         ArrayList<Integer> tags = new ArrayList<>();
 
+        operation = "Post() Checking isUpdated";
         if ((Boolean) storyDataMap.get("isUpdated")) {
-            operation = "Existing Post Category/Tag Retrieval";
+            operation = "Post() Existing Post Category/Tag Retrieval";
             wpPostId = (String) storyDataMap.get("id");
             wpp.setID(wpPostId);
 
@@ -123,26 +128,27 @@ public class WordPressExec {
             }
         }
 
+        operation = "Post() Checking isNew/isUpdated";
         if ((Boolean) storyDataMap.get("isNew") || (Boolean) storyDataMap.get("isUpdated")) {
-            operation = "Set Category";
+            operation = "Post() Set Category";
             categories.addAll(this.setCats());
             wpp.setCategories(categories);
 
-            operation = "Set Tags";
+            operation = "Post() Set Tags";
             tags.addAll(this.setTags());
             wpp.setTags(tags);
 
-            operation = "Set Author";
+            operation = "Post() Set Author";
             wpp.setAuthor(authorId);
 
-            operation = "Set Status";
+            operation = "Post() Set Status";
             wpp.setStatus(_subscriberMap.get("status"));
 
-            operation = "Post Normalize";
+            operation = "Post() Post Normalize";
             resultMap = this.postStory(wpp, storyDataMap, postLocation);
 
             if ((Boolean) storyDataMap.get("isNew")) {
-                operation = "Gather Post Data";
+                operation = "Post() Gather Post Data";
                 wpPostId = resultMap.get("wpPostId");
                 wpp.setID(wpPostId);
                 postLocation = resultMap.get("postLocation");
@@ -158,19 +164,19 @@ public class WordPressExec {
 
             LogUtil.log("postStory info: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
 
-            operation = "Post Images";
+            operation = "Post() Post Images";
             this.postImages(wpPostId, postLocation, authorId, wpp, mediaBaseEndpoint);
 
             if ((Boolean) storyDataMap.get("isNew")) {
-                operation = "Post TrackingMeta";
+                operation = "Post() Post TrackingMeta";
                 this.postTrackingMeta(postLocation);
 
-                operation = "Post StoryMeta";
+                operation = "Post() Post StoryMeta";
                 Map<String, Map<String, String>> storyMeta = this.getStoryMeta(wppXML);
                 this.postStoryMeta(postLocation, storyMeta);
             }
 
-            operation = "All clear";
+            operation = "Post() All clear";
             LogUtil.log("Completed post into: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
         }
         return resultMap;
@@ -182,21 +188,15 @@ public class WordPressExec {
         String baseURI = _subscriberMap.get("url");
         String postBaseEndpoint = baseURI + "wp/v2/posts/";
 
-        operation = "Transform XML";
-        String xsltPath = _xsltRootPath + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
-        String wppXML = XmlUtil.transform(_story, xsltPath);
-        WordPressPost wpp = WordPressPost.fromXML(wppXML);
+        operation = "Get() Get Existing Post ID";
+        Map<String, String> deliveredKeys = redisClient.hgetAll(_deliveredStoryKey);
+        String wpPostId = deliveredKeys.get("id");
 
-        operation = "Get Normalize data";
-        storyDataMap = this.getStoryData(wpp, wppXML);
-
-        operation = "Existing Post Category/Tag Retrieval";
-        String wpPostId = (String) storyDataMap.get("id");
-        wpp.setID(wpPostId);
-
+        operation = "Get() Set postLocation";
         postLocation = postBaseEndpoint + wpPostId;
         apiMap = this.getPost(postLocation);
 
+        operation = "Get() Return Data";
         resultMap.put("code", apiMap.get("code"));
         resultMap.put("result", apiMap.get("body"));
 
@@ -211,17 +211,23 @@ public class WordPressExec {
         String keyCheck = "key";
         String valCheck = "value";
         String typeCheck = "type";
-        if (publisher.getUpdateCheckType().equalsIgnoreCase("md5")) {
-            byte[] b5 = SerializationUtil.serialize(wpp.getContent());
-            String s5 = new String(b5, StandardCharsets.UTF_8);
-            String m5 = RedisContentUtil.createMD5(s5);
-            keyCheck = this.publisher.getUpdateCheckType();
-            valCheck = m5;
-            typeCheck = "md5";
-        } else if (publisher.getUpdateCheckType().equalsIgnoreCase("sequence")) {
-            keyCheck = this.publisher.getUpdateCheckType();
-            valCheck = XmlUtil.getNodeValue(wppXML, "sequence");
-            typeCheck = XmlUtil.getAttributeValue(wppXML, "sequence", "type");
+        try {
+            if (publisher.getUpdateCheckType().equalsIgnoreCase("md5")) {
+                byte[] b5 = SerializationUtil.serialize(wpp.getContent());
+                String s5 = new String(b5, StandardCharsets.UTF_8);
+                String m5 = RedisContentUtil.createMD5(s5);
+                keyCheck = this.publisher.getUpdateCheckType();
+                valCheck = m5;
+                typeCheck = "md5";
+            } else if (publisher.getUpdateCheckType().equalsIgnoreCase("sequence")) {
+                keyCheck = this.publisher.getUpdateCheckType();
+                valCheck = XmlUtil.getNodeValue(wppXML, "sequence");
+                typeCheck = XmlUtil.getAttributeValue(wppXML, "sequence", "type");
+            }
+        } catch (Exception e) {
+            keyCheck = "sequence";
+            valCheck = "0";
+            typeCheck = "int";
         }
         //NOT catching exceptions, because if we don't know this metadata, the rest of the objects don't matter.
         return RedisContentUtil.createStoryStatusMap(_deliveredStoryKey, keyCheck, valCheck, typeCheck, this.redisClient);
@@ -309,7 +315,7 @@ public class WordPressExec {
             try {
                 key = entry.getKey();
                 value = entry.getValue();
-                json = String.format("{ \"key\":\"%s\",\"value\":\"%s\" }", key, value) ;
+                json = String.format("{ \"key\":\"%s\",\"value\":\"%s\" }", key, value);
                 resultMap = WordPressAdapter.postJson(json, postEndpoint, this.wordPressClient);
             } catch (Exception e) {
                 String errMsg = "Meta post error for: " + key + "(" + value + ")" + " into Subscriber: " + _subscriberMap.get("name") + " at: " + postLocation + " for contentKey: " + _contentKey + " from feedKey: " + _feedKey + " " + ExceptionUtil.getFullStackTrace(e);
@@ -434,7 +440,10 @@ public class WordPressExec {
         Map<String, String> postMap = new HashMap<>();
         try {
             postMap.put("id", storyPostMap.get("wpPostId"));
-            postMap.put("location", storyPostMap.get("postLocation"));
+            String postLocation = storyPostMap.get("postLocation");
+            if(postLocation != null) {
+                postMap.put("location", storyPostMap.get("postLocation"));
+            }
             postMap.put((String) storyDataMap.get("keyCheck"), (String) storyDataMap.get("valueCheck"));
             LogUtil.log("_deliveredStoryKey: " + _deliveredStoryKey + ", postMap: " + postMap.toString());
             RedisContentUtil.trackContent(_deliveredStoryKey, postMap, this.redisClient);
