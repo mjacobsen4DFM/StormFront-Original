@@ -11,6 +11,7 @@ import com.DFM.StormFront.Model.Publisher;
 import com.DFM.StormFront.Model.WordPress.Image;
 import com.DFM.StormFront.Model.WordPress.WordPressPost;
 import com.DFM.StormFront.Util.*;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -95,6 +96,11 @@ public class WordPressExec {
         String xsltPath = _xsltRootPath + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
         String wppXML = XmlUtil.transform(_story, xsltPath);
         WordPressPost wpp = WordPressPost.fromXML(wppXML);
+
+/*
+        Map<String, Map<String, String>> storyMetaTest = this.getStoryMeta(wppXML);
+        if (1==1) { return null; }
+*/
 
         storyTitle = wpp.getTitle();
 
@@ -236,24 +242,27 @@ public class WordPressExec {
     public Map<String, Map<String, String>> getStoryMeta(String wppXML) {
         Map<String, Map<String, String>> storyMeta = new HashMap<>();
         try {
-
-            Document wppDocument = XmlUtil.fromString(wppXML);
+            Document wppDocument = XmlUtil.fromString(wppXML.trim());
             NodeList nodes = wppDocument.getElementsByTagName("field");
             for (int i = 0; i < nodes.getLength(); i++) {
-                Element element = (Element) nodes.item(i);
+                try {
+                    Element element = (Element) nodes.item(i);
 
-                String key = XmlUtil.getFirstValue(element, "key");
-                String value = XmlUtil.getFirstValue(element, "value");
-                Map<String, String> metaField = new HashMap<>();
-                metaField.put(key, value);
+                    String key = XmlUtil.getFirstValue(element, "key");
+                    String value = XmlUtil.getFirstValue(element, "value");
+                    Map<String, String> metaField = new HashMap<>();
+                    metaField.put(key, value);
 
-                storyMeta.put(Integer.toString(i), metaField);
+                    storyMeta.put(Integer.toString(i), metaField);
+                } catch (Exception e) {
+                    RedisLogUtil.logError(e, this.redisClient);
+                }
             }
-            return storyMeta;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+        return storyMeta;
     }
 
     public Map<String, String> postStory(WordPressPost wpp, Map<String, Object> storyDataMap, String postLocation) throws Exception {
@@ -314,7 +323,7 @@ public class WordPressExec {
         for (Map.Entry<String, String> entry : meta.entrySet()) {
             try {
                 key = entry.getKey();
-                value = entry.getValue();
+                value = StringEscapeUtils.unescapeHtml(entry.getValue());
                 json = String.format("{ \"key\":\"%s\",\"value\":\"%s\" }", key, value);
                 resultMap = WordPressAdapter.postJson(json, postEndpoint, this.wordPressClient);
             } catch (Exception e) {
@@ -441,7 +450,7 @@ public class WordPressExec {
         try {
             postMap.put("id", storyPostMap.get("wpPostId"));
             String postLocation = storyPostMap.get("postLocation");
-            if(postLocation != null) {
+            if (postLocation != null) {
                 postMap.put("location", storyPostMap.get("postLocation"));
             }
             postMap.put((String) storyDataMap.get("keyCheck"), (String) storyDataMap.get("valueCheck"));

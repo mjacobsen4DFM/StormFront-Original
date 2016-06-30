@@ -66,13 +66,30 @@ public class XmlUtil {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         javax.xml.parsers.DocumentBuilder builder;
+        builder = factory.newDocumentBuilder();
+        InputSource inputSource;
         try {
-            builder = factory.newDocumentBuilder();
-            doc = builder.parse(inputStream);
-        } catch (Exception e) {
-            throw new Exception(ExceptionUtil.getFullStackTrace(e));
-        } finally {
-            inputStream.close();
+            inputSource = new InputSource(inputStream);
+            inputSource.setEncoding("UTF-8");
+            doc = builder.parse(inputSource);
+        } catch (Exception e1) {
+            try {
+                inputStream.reset();
+                inputSource = new InputSource(inputStream);
+                inputSource.setEncoding("ISO-8859-1");
+                doc = builder.parse(inputSource);
+            } catch (Exception e2) {
+                try {
+                    inputStream.reset();
+                    inputSource = new InputSource(inputStream);
+                    inputSource.setEncoding("Windows-1252");
+                    doc = builder.parse(inputSource);
+                } catch (Exception e3) {
+                    throw new Exception(ExceptionUtil.getFullStackTrace(e3));
+                } finally {
+                    inputStream.close();
+                }
+            }
         }
         return doc;
     }

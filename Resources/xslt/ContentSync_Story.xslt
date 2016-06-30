@@ -14,9 +14,16 @@
         <xsl:value-of select="canonicalUrl"/>
       </viewURI>
       <subjects>
-        <xsl:for-each select="contentGroups/contentGroup">
+        <xsl:for-each select="taxonomy/level">
           <subject>
-            <xsl:value-of select="."/>
+            <xsl:choose>
+              <xsl:when test="normalize-space(.) = ''">
+                <xsl:text>News</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="."/>
+              </xsl:otherwise>
+            </xsl:choose>
           </subject>
         </xsl:for-each>
       </subjects>

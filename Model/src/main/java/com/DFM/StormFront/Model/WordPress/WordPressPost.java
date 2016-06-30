@@ -64,6 +64,8 @@ public class WordPressPost implements Serializable {
 
     private ArrayList<Integer> tags;
 
+    private ArrayList<Integer> sources;
+
 
 /*
     private String post_parent;
@@ -318,5 +320,13 @@ public class WordPressPost implements Serializable {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public ArrayList<Integer> getSources() {
+        return sources;
+    }
+
+    public void setSources(ArrayList<Integer> sources) {
+        this.sources = sources;
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0"
+                xmlns:exsl="http://exslt.org/common"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:nitf="http://iptc.org/stdnitf/2006-10-18/"
                 xmlns:atom="http://www.w3.org/2005/Atom"
@@ -97,6 +98,29 @@
             <xsl:value-of select="normalize-space(apcm:ContentMetadata/apcm:SlugLine)"/>
           </value>
         </field>
+        <xsl:variable name="byline">
+          <xsl:value-of select="substring-after(apcm:ContentMetadata/apcm:ByLine, 'By ')"/>
+        </xsl:variable>
+
+        <xsl:variable name="authors">
+          <tokens>
+            <xsl:call-template name="tokenizeAuthors">
+              <xsl:with-param name="tokens" select="$byline" />
+            </xsl:call-template>
+          </tokens>
+        </xsl:variable>
+
+        <xsl:for-each select="exsl:node-set($authors)/tokens/token">
+          <field>
+            <key>
+              <xsl:text>dfm_AP_Author</xsl:text>
+            </key>
+            <value>
+              <xsl:value-of select="normalize-space(.)"/>
+            </value>
+          </field>
+        </xsl:for-each>
+        
         <xsl:for-each select="apcm:ContentMetadata/apcm:EntityClassification[@Authority='AP Party']">
           <field>
             <key>
@@ -119,5 +143,44 @@
         </xsl:for-each>
       </metadata>
     </wp-api>
+  </xsl:template>
+
+  <xsl:template name="tokenizeAuthors">
+    <xsl:param name="tokens" />
+    <xsl:param name="delim" select="string(',')" />
+    <xsl:choose>
+      <xsl:when test="contains($tokens, string(', and '))">
+        <token>
+          <xsl:value-of select="substring-after($tokens, string(', and '))" />
+        </token>
+        <xsl:call-template name="tokenizeAuthors">
+          <xsl:with-param name="tokens" select="substring-before($tokens, string(', and '))" />
+          <xsl:with-param name="delim" select="string(', and ')" />
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:when test="contains($tokens, string(','))">
+        <token>
+          <xsl:value-of select="substring-before($tokens, string(','))" />
+        </token>
+        <xsl:call-template name="tokenizeAuthors">
+          <xsl:with-param name="tokens" select="substring-after($tokens, string(','))" />
+          <xsl:with-param name="delim" select="string(',')" />
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:when test="contains($tokens, string(' and '))">
+        <token>
+          <xsl:value-of select="substring-before($tokens, string(' and '))" />
+        </token>
+        <xsl:call-template name="tokenizeAuthors">
+          <xsl:with-param name="tokens" select="substring-after($tokens, string(' and '))" />
+          <xsl:with-param name="delim" select="string(' and ')" />
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <token>
+          <xsl:value-of select="normalize-space($tokens)" />
+        </token>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 </xsl:stylesheet>
