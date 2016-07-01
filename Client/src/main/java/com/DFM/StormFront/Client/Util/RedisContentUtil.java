@@ -66,6 +66,8 @@ public class RedisContentUtil {
                 bUpdated = !preValue.contentEquals(newValue);
             } else if (compareType.equalsIgnoreCase("int")) {
                 bUpdated = Integer.parseInt(newValue) > Integer.parseInt(preValue);
+            } else if (compareType.equalsIgnoreCase("long")) {
+                bUpdated = Long.parseLong(newValue) > Long.parseLong(preValue);
             } else {
                 throw new Exception(compareType + " Comparison Type Not Implemented");
             }
