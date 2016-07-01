@@ -27,7 +27,7 @@
     <version>dev</version>
 
     <properties>
-        <Appliance.Util.version>0.2.12</Appliance.Util.version>
+        <Appliance.Util.version>0.2.13</Appliance.Util.version>
         <Appliance.Model.version>0.4.2</Appliance.Model.version>
         <Appliance.Client.version>0.2.8</Appliance.Client.version>
         <Appliance.Adapter.version>0.2.5</Appliance.Adapter.version>
