@@ -28,49 +28,55 @@ public class PublisherSpout extends BaseRichSpout {
     private static String _pubKey = "";
     private static Map<String, String> _keys = new HashMap<>();
     private static ArrayList<String> _pubs;
+    private static Queue<String> _pubList = new LinkedList<>();
     private static Queue<String> _pubQueue = new LinkedList<>();
+    private static Integer tupleCount = 0;
+
+
+    private static LogUtil _logUtil = new LogUtil();
 
     private static Fields _fields = new Fields("pubKey", "publisher");
     private static Values _values;
     private static Map<String, Object> _mainConf;
 
     public PublisherSpout(String publisherKeySearch){
-        //LogUtil.log("newspout");
+        _logUtil.log("newspout", 4);
         _publisherKeySearch = publisherKeySearch;
     }
 
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector spoutOutputCollector) {
-        //LogUtil.log("open");
+        _logUtil.log("open", 4);
         // Open the spout
         _mode = "storm";
         configure(conf);
-
+        _logUtil.level = Integer.parseInt(_redisClient.hget("config:storm", "loglevel"));
         //Collect the rain
         _spoutOutputCollector = spoutOutputCollector;
     }
 
     private void configure(Map conf) {
-        //LogUtil.log("configure");
         _mainConf = conf;
         _redisClient = new RedisClient(conf);
+        _logUtil.level = Integer.parseInt(_redisClient.hget("config:" + _mode, "loglevel"));
         _hostname = SystemUtil.getHostname();
         _publisherKeySearch = (String) conf.get("publisherKeySearch");
-        //LogUtil.log("publisherKeySearch: " +  _publisherKeySearch);
+        _logUtil.log("publisherKeySearch: " +  _publisherKeySearch);
 
         //Get the pubs from Redis
         _pubs = _redisClient.keys(_publisherKeySearch);
 
         //Populate the pubs list
+        _pubList.addAll(_pubs);
         _pubQueue.addAll(_pubs);
     }
 
     private static void run() throws Exception {
-        //LogUtil.log("run");
+        _logUtil.log("run", 4);
         _pubKey = _pubQueue.poll();
         try {
             if(StringUtil.isNotNullOrEmpty(_pubKey)) {
-                if (2 == 2) LogUtil.log("PublisherSpout-> START msgId = " + _pubKey);
+                _logUtil.log("PublisherSpout-> START msgId = " + _pubKey, 2);
                 _keys = _redisClient.hgetAll(_pubKey);
                 _keys.put("pubKey", _pubKey);
                 _publisher = new Publisher(_keys);
@@ -84,7 +90,7 @@ public class PublisherSpout extends BaseRichSpout {
     }
 
     private static void emit(String pubKey, byte[] binaryPublisher, String pubId) throws Exception {
-        //LogUtil.log("emit");
+        _logUtil.log("emit", 4);
         _values = new Values(pubKey, binaryPublisher);
         if (_mode.equalsIgnoreCase("linear")) {
             Map<String, Object> outConf = LinearControl.buildConf(_fields, _values);
@@ -97,20 +103,44 @@ public class PublisherSpout extends BaseRichSpout {
     }
 
     public void linear(Map conf) {
-        //LogUtil.log("linear");
+        _logUtil.log("linear", 4);
         _mode = "linear";
         configure(conf);
         _pubQueue.clear();
-        _pubQueue.add("publishers:AP:AP-Online-National-News");
+        reloadPubs();
+        _pubQueue.add("publishers:NCS:www.dailynews.com");
         nextTuple();
+    }
+
+    public void reloadPubs(){
+        Queue<String> pubList = new LinkedList<>();
+        //Get the pubs from Redis
+        ArrayList<String> pubs = _redisClient.keys(_publisherKeySearch);
+        pubList.addAll(pubs);
+        String pubkey;
+
+        while ((pubkey = pubList.poll()) != null) {
+            if(! _pubList.contains(pubkey)){
+                //Add any new pubs to the list & queue
+                _logUtil.log("Publist changed! Adding: " + pubkey, 1);
+                _pubList.add(pubkey);
+                _pubQueue.add(pubkey);
+            }
+        }
     }
 
     @Override
     public void nextTuple() {
-        //LogUtil.log("tuple");
+        _logUtil.log("tuple", 4);
         try {
             run();
             //	check();
+            tupleCount += 1;
+            if(1000 == tupleCount){
+                _logUtil.log("Tuples: " + tupleCount, 3);
+                reloadPubs();
+                tupleCount = 0;
+            }
         } catch (Exception e) {
             fail(_pubKey);
         }
@@ -132,9 +162,9 @@ public class PublisherSpout extends BaseRichSpout {
                 i += 1;
                 pubKey = DeliveryIterator.next();
                 msgId = pubKey + ":" + _hostname + ":" + System.nanoTime();
-                if (2 == 9) LogUtil.log("PublisherSpout->Spout START for msgId" + msgId);
+                _logUtil.log("PublisherSpout->Spout START for msgId" + msgId, 1);
                 delMap = _redisClient.hgetAll(pubKey);
-                LogUtil.log(i + " - id: " + delMap.get("id") + " pubkey: " + pubKey + " title: " + delMap.get("title"));
+                _logUtil.log(i + " - id: " + delMap.get("id") + " pubkey: " + pubKey + " title: " + delMap.get("title"), 1);
                 fullMap.put(Integer.toString(i), delMap.get("id") + ", pubkey: " + pubKey + " title:" + delMap.get("title"));
             }
             Map<String, String> sortMap = sortHashMapByValuesD((HashMap) fullMap);
@@ -154,17 +184,17 @@ public class PublisherSpout extends BaseRichSpout {
             Map.Entry entry = (Map.Entry) it.next();
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
-            //LogUtil.log(key + " => " + value);
+            _logUtil.log(key + " => " + value, 4);
             if (value.substring(0, 5).equalsIgnoreCase(prev)) {
                 flag = "****\r\n";
             } else {
                 flag = "";
             }
-            LogUtil.log(flag + value);
+            _logUtil.log(flag + value, 1);
             prev = value.substring(0, 5);
 
         }//while
-        LogUtil.log("========================");
+        _logUtil.log("========================", 1);
     }//printMap
 
     public static LinkedHashMap sortHashMapByValuesD(HashMap passedMap) {
@@ -195,7 +225,7 @@ public class PublisherSpout extends BaseRichSpout {
 
     @Override
     public void ack(Object pubKey) {
-        if (1 == 1) LogUtil.log("PublisherSpout-> ACK msgId = " + pubKey.toString());
+        _logUtil.log("PublisherSpout-> ACK msgId = " + pubKey.toString(), 1);
         _pubQueue.add((String) pubKey);
     }
 
@@ -207,7 +237,7 @@ public class PublisherSpout extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        //LogUtil.log("declare");
+        _logUtil.log("declare", 4);
         // create the tuple with field names for Site
         declarer.declare(_fields);
     }
