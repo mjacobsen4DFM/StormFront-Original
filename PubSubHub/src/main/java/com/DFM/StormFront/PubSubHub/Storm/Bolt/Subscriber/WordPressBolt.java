@@ -64,10 +64,10 @@ public class WordPressBolt extends BaseRichBolt {
         _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","delivered"), _publisher.getSource(), _contentKey};
         _deliveredStoryKey = RedisContentUtil.setKey(_keyArgs);
 
-        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), _publisher.getSource(), "cat"};
+        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), "cat"};
         _catKeyRoot = RedisContentUtil.setKey(_keyArgs);
 
-        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), _publisher.getSource(), "tag"};
+        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), "tag"};
         _tagKeyRoot = RedisContentUtil.setKey(_keyArgs);
     }
 
@@ -88,10 +88,10 @@ public class WordPressBolt extends BaseRichBolt {
         _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","delivered"), _publisher.getSource(), _contentKey};
         _deliveredStoryKey = RedisContentUtil.setKey(_keyArgs);
 
-        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), _publisher.getSource(), "cat"};
+        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), "cat"};
         _catKeyRoot = RedisContentUtil.setKey(_keyArgs);
 
-        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), _publisher.getSource(), "tag"};
+        _keyArgs = new String[]{_subscriberMap.get("subscriberBase").replace("subscribers","taxonomy"), "tag"};
         _tagKeyRoot = RedisContentUtil.setKey(_keyArgs);
     }
 
