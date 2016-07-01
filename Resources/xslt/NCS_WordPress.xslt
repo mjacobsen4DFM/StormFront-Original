@@ -47,6 +47,9 @@
         <xsl:for-each select="//item/media:content">
           <xsl:variable name="i" select="position()" />
           <image>
+            <guid>
+              <xsl:value-of select="normalize-space(@url)"/>
+            </guid>
             <mime-type>
               <xsl:value-of select="normalize-space(@type)"/>
             </mime-type>
@@ -58,7 +61,7 @@
             </caption>
             <name>
               <xsl:variable name="name" select="normalize-space(translate(//item/title, translate(//item/title, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_', ''), '_'))"/>
-              <xsl:value-of select="concat($name, '_', $i)"/>
+              <xsl:value-of select="concat($name, '_', $i, '.jpg')"/>
             </name>
             <title>
               <xsl:value-of select="normalize-space(translate(//item/title, translate(//item/title, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_ ', ''), '_'))"/>
