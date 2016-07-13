@@ -69,4 +69,3 @@ Resources/sources/*.*
 *.war
 *.flattened-pom.xml
 .flattened-pom.xml
-PubSubHub/src/main/java/com/DFM/StormFront/PubSubHub/Storm/Topology/PubSubHubTopology.java
