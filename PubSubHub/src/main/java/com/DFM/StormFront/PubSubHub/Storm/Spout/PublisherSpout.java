@@ -106,9 +106,6 @@ public class PublisherSpout extends BaseRichSpout {
         _logUtil.log("linear", 4);
         _mode = "linear";
         configure(conf);
-        _pubQueue.clear();
-        reloadPubs();
-        _pubQueue.add("publishers:NCS:www.dailynews.com");
         nextTuple();
     }
 

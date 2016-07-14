@@ -14,6 +14,7 @@ import com.DFM.StormFront.PubSubHub.Storm.Bolt.Subscriber.WordPressBolt;
 import com.DFM.StormFront.PubSubHub.Storm.Bolt.Workflow.*;
 import com.DFM.StormFront.PubSubHub.Storm.Spout.PublisherSpout;
 import com.DFM.StormFront.Util.FileUtil;
+import com.DFM.StormFront.Util.StringUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +53,65 @@ public class PubSubHubTopology {
     }
 
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+
+        Map<String, String> options = getOptions(args);
+        if (options.get("mode").equalsIgnoreCase("storm")) {
+            storm(args, options);
+        }
+
+        if (options.get("mode").equalsIgnoreCase("linear")) {
+            linear(args, options);
+        }
+    }
+
+    private static void storm(String[] args, Map<String, String> options ) throws AlreadyAliveException, InvalidTopologyException {
+        Config conf = new Config();
+        conf.setDebug(false);
+        conf.setNumWorkers(4);
+        conf.setMaxSpoutPending(1000);
+        conf.setMessageTimeoutSecs(300);
+        //conf.setMaxTaskParallelism(4);
+        RedisClient redisClient = new RedisClient(options.get("loc"));
+        conf.put("redisHost", redisClient.getHost());
+        conf.put("redisPort", Integer.toString(redisClient.getPort()));
+        conf.put("redisTimeout", Integer.toString(redisClient.getTimeout()));
+        conf.put("redisPassword", redisClient.getPassword());
+        conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
+        conf.put("xsltRootPath", FileUtil.getXsltPath());
+        if(StringUtil.isNotNullOrEmpty(options.get("pubsearch"))) {
+            conf.put("publisherKeySearch", options.get("pubsearch"));
+        } else {
+            conf.put("publisherKeySearch", "publishers:*");
+        }
+
+        // PubSubTopology is the name of submitted topology
+        //Submit to prod cluster uncomment next command, comment previous 2 commands
+        try {
+            StormSubmitter.submitTopology("PubSubHubTopology", conf, buildTopology(args));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void linear(String[] args, Map<String, String> options) {
+        Map<String, String> conf = new HashMap<>();
+        RedisClient redisClient = new RedisClient(options.get("loc"));
+        conf.put("redisHost", redisClient.getHost());
+        conf.put("redisPort", Integer.toString(redisClient.getPort()));
+        conf.put("redisTimeout", Integer.toString(redisClient.getTimeout()));
+        conf.put("redisPassword", redisClient.getPassword());
+        conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
+        conf.put("xsltRootPath", FileUtil.getXsltPath());
+        if(StringUtil.isNotNullOrEmpty(options.get("pubsearch"))) {
+            conf.put("publisherKeySearch", options.get("pubsearch"));
+        } else {
+            conf.put("publisherKeySearch", "publishers:*");
+        }
+
+        PublisherSpout publisherSpout = new PublisherSpout("publishers:*");
+        publisherSpout.linear(conf);
+    }
+
+    private static Map<String, String> getOptions(String[] args) {
         int i = 0;
         String key = "";
         String val = "";
@@ -65,53 +125,7 @@ public class PubSubHubTopology {
             options.put(key, val);
             i++;
         }
-
-        if (options.get("mode").equalsIgnoreCase("storm")) {
-            storm(args, options.get("loc"));
-        }
-
-        if (options.get("mode").equalsIgnoreCase("linear")) {
-            linear(args, options.get("loc"));
-        }
-    }
-
-    private static void storm(String[] args, String dbLoc) throws AlreadyAliveException, InvalidTopologyException {
-        Config conf = new Config();
-        conf.setDebug(false);
-        conf.setNumWorkers(4);
-        conf.setMaxSpoutPending(1000);
-        conf.setMessageTimeoutSecs(300);
-        //conf.setMaxTaskParallelism(4);
-        RedisClient redisClient = new RedisClient(dbLoc);
-        conf.put("redisHost", redisClient.getHost());
-        conf.put("redisPort", Integer.toString(redisClient.getPort()));
-        conf.put("redisTimeout", Integer.toString(redisClient.getTimeout()));
-        conf.put("redisPassword", redisClient.getPassword());
-        conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
-        conf.put("xsltRootPath", FileUtil.getXsltPath());
-        conf.put("publisherKeySearch", "publishers:*");
-
-        // PubSubTopology is the name of submitted topology
-        //Submit to prod cluster uncomment next command, comment previous 2 commands
-        try {
-            StormSubmitter.submitTopology("PubSubHubTopology", conf, buildTopology(args));
-        } catch (Exception ignored) {
-        }
-    }
-
-    private static void linear(String[] args, String dbLoc) {
-        Map<String, String> conf = new HashMap<>();
-        RedisClient redisClient = new RedisClient(dbLoc);
-        conf.put("redisHost", redisClient.getHost());
-        conf.put("redisPort", Integer.toString(redisClient.getPort()));
-        conf.put("redisTimeout", Integer.toString(redisClient.getTimeout()));
-        conf.put("redisPassword", redisClient.getPassword());
-        conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
-        conf.put("xsltRootPath", FileUtil.getXsltPath());
-        conf.put("publisherKeySearch", "publishers:*");
-
-        PublisherSpout publisherSpout = new PublisherSpout("publishers:*");
-        publisherSpout.linear(conf);
+        return options;
     }
 
 }
