@@ -69,3 +69,4 @@ Resources/sources/*.*
 *.war
 *.flattened-pom.xml
 .flattened-pom.xml
+zookeeper.out

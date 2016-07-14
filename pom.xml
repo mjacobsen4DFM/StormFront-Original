@@ -9,7 +9,7 @@
         <developer>
             <id>mjacobsen</id>
             <name>Michael Jacobsen</name>
-            <email>mjacobsen@denverpost.com</email>
+            <email>mjacobsen@digitalfirstmedia.com</email>
             <organization>Digital First Media</organization>
             <roles>
                 <role>architect</role>
@@ -32,7 +32,7 @@
         <Appliance.Client.version>0.2.8</Appliance.Client.version>
         <Appliance.Adapter.version>0.2.5</Appliance.Adapter.version>
         <Appliance.Exec.version>0.1.15</Appliance.Exec.version>
-        <Appliance.PubSubHub.version>0.10.9</Appliance.PubSubHub.version>
+        <Appliance.PubSubHub.version>0.10.10</Appliance.PubSubHub.version>
         <Appliance.Interface.version>0.5.4</Appliance.Interface.version>
 <!--
         <Appliance.FixIt.version>0.1.1</Appliance.FixIt.version>
