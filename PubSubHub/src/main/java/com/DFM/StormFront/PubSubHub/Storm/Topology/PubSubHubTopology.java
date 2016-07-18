@@ -14,6 +14,7 @@ import com.DFM.StormFront.PubSubHub.Storm.Bolt.Subscriber.WordPressBolt;
 import com.DFM.StormFront.PubSubHub.Storm.Bolt.Workflow.*;
 import com.DFM.StormFront.PubSubHub.Storm.Spout.PublisherSpout;
 import com.DFM.StormFront.Util.FileUtil;
+import com.DFM.StormFront.Util.LogUtil;
 import com.DFM.StormFront.Util.StringUtil;
 
 import java.util.HashMap;
@@ -78,9 +79,12 @@ public class PubSubHubTopology {
         conf.put("redisPassword", redisClient.getPassword());
         conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
         conf.put("xsltRootPath", FileUtil.getXsltPath());
+
         if(StringUtil.isNotNullOrEmpty(options.get("pubsearch"))) {
+            LogUtil.log(String.format("Setting Search: %s", options.get("pubsearch")), "/home/storm/apache-storm/logs/topology.log");
             conf.put("publisherKeySearch", options.get("pubsearch"));
         } else {
+            LogUtil.log("Setting Search: publishers:*");
             conf.put("publisherKeySearch", "publishers:*");
         }
 
@@ -101,9 +105,12 @@ public class PubSubHubTopology {
         conf.put("redisPassword", redisClient.getPassword());
         conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
         conf.put("xsltRootPath", FileUtil.getXsltPath());
+
         if(StringUtil.isNotNullOrEmpty(options.get("pubsearch"))) {
+            LogUtil.log(String.format("Setting Search: %s", options.get("pubsearch")) );
             conf.put("publisherKeySearch", options.get("pubsearch"));
         } else {
+            LogUtil.log("Setting Search: publishers:*");
             conf.put("publisherKeySearch", "publishers:*");
         }
 

@@ -42,6 +42,7 @@ public class WordPressExec {
     private String _subjectsXML;
     private String _xsltRootPath;
     private String _story;
+    private WordPressPost _wpp = new WordPressPost();
 
     public WordPressExec() {
         this.operation = "new";
@@ -95,17 +96,17 @@ public class WordPressExec {
         operation = "Post() Transform XML";
         String xsltPath = _xsltRootPath + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
         String wppXML = XmlUtil.transform(_story, xsltPath);
-        WordPressPost wpp = WordPressPost.fromXML(wppXML);
+        _wpp = WordPressPost.fromXML(wppXML);
 
 /*
         Map<String, Map<String, String>> storyMetaTest = this.getStoryMeta(wppXML);
         if (1==1) { return null; }
 */
 
-        storyTitle = wpp.getTitle();
+        storyTitle = _wpp.getTitle();
 
         operation = "Post() Get Normalized data";
-        storyDataMap = this.getStoryData(wpp, wppXML);
+        storyDataMap = this.getStoryData(_wpp, wppXML);
         ArrayList<Integer> categories = new ArrayList<>();
         ArrayList<Integer> tags = new ArrayList<>();
 
@@ -113,7 +114,7 @@ public class WordPressExec {
         if ((Boolean) storyDataMap.get("isUpdated")) {
             operation = "Post() Existing Post Category/Tag Retrieval";
             wpPostId = (String) storyDataMap.get("id");
-            wpp.setID(wpPostId);
+            _wpp.setID(wpPostId);
 
             postLocation = postBaseEndpoint + wpPostId;
             resultMap = this.getPost(postLocation);
@@ -138,25 +139,25 @@ public class WordPressExec {
         if ((Boolean) storyDataMap.get("isNew") || (Boolean) storyDataMap.get("isUpdated")) {
             operation = "Post() Set Category";
             categories.addAll(this.setCats());
-            wpp.setCategories(categories);
+            _wpp.setCategories(categories);
 
             operation = "Post() Set Tags";
             tags.addAll(this.setTags());
-            wpp.setTags(tags);
+            _wpp.setTags(tags);
 
             operation = "Post() Set Author";
-            wpp.setAuthor(authorId);
+            _wpp.setAuthor(authorId);
 
             operation = "Post() Set Status";
-            wpp.setStatus(_subscriberMap.get("status"));
+            _wpp.setStatus(_subscriberMap.get("status"));
 
             operation = "Post() Post Normalize";
-            resultMap = this.postStory(wpp, storyDataMap, postLocation);
+            resultMap = this.postStory(_wpp, storyDataMap, postLocation);
 
             if ((Boolean) storyDataMap.get("isNew")) {
                 operation = "Post() Gather Post Data";
                 wpPostId = resultMap.get("wpPostId");
-                wpp.setID(wpPostId);
+                _wpp.setID(wpPostId);
                 postLocation = resultMap.get("postLocation");
             }
 
@@ -171,7 +172,7 @@ public class WordPressExec {
             LogUtil.log("postStory info: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
 
             operation = "Post() Post Images";
-            this.postImages(wpPostId, postLocation, authorId, wpp, mediaBaseEndpoint);
+            this.postImages(wpPostId, postLocation, authorId, _wpp, mediaBaseEndpoint);
 
             if ((Boolean) storyDataMap.get("isNew")) {
                 operation = "Post() Post TrackingMeta";
@@ -257,9 +258,8 @@ public class WordPressExec {
                     Map<String, String> metaField = new HashMap<>();
                     metaField.put(key, value);
 
-                    storyMeta.put(Integer.toString(i), metaField);
                 } catch (Exception e) {
-                    String msg = String.format("getStoryMeta() Error: Publisher %s, Key %s, Value %s", publisher.getPubKey(), key, value);
+                    String msg = String.format("getStoryMeta() Error: Publisher %s, url %s, title %s, Key %s, Value %s.", publisher.getPubKey(), publisher.getUrl(), _wpp.getTitle(), key, value);
                     RedisLogUtil.logError(msg, e, this.redisClient);
                 }
             }

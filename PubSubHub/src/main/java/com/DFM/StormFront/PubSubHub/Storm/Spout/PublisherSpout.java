@@ -69,6 +69,9 @@ public class PublisherSpout extends BaseRichSpout {
         //Populate the pubs list
         _pubList.addAll(_pubs);
         _pubQueue.addAll(_pubs);
+
+        _logUtil.log(String.format("_pubs: %s, _pubList: %s ,_pubQueue: %s", _pubs.size(), _pubList.size(), _pubQueue.size()), "/home/storm/apache-storm/logs/spout.log");
+
     }
 
     private static void run() throws Exception {
@@ -106,6 +109,7 @@ public class PublisherSpout extends BaseRichSpout {
         _logUtil.log("linear", 4);
         _mode = "linear";
         configure(conf);
+        _logUtil.level = Integer.parseInt(_redisClient.hget("config:storm", "loglevel"));
         nextTuple();
     }
 
