@@ -64,7 +64,8 @@ public class WordPressAdapter {
     }
 
     public static Map<String, String> postJson(String json, String postBaseEndpoint, WordPressClient wpc) throws Exception {
-        Map<String, String> resultMap;
+        Map<String, String> resultMap = new HashMap<>();
+        ;
         String postLocation = postBaseEndpoint;
         String wpPostId = "";
 
@@ -121,7 +122,8 @@ public class WordPressAdapter {
     }
 
     public static Map<String, String> postMedia(String imageJson, String mediaBaseEndpoint, WordPressClient wpc) throws Exception {
-        Map<String, String> resultMap;
+        Map<String, String> resultMap = new HashMap<>();
+        Map<String, String> intermediateMap = new HashMap<>();
         //  String mediaEndpoint = mediaBaseEndpoint + "media/";
         String mediaLocation;
         String postLocation;
@@ -155,34 +157,34 @@ public class WordPressAdapter {
         if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
             wpImageId = JsonUtil.getValue(resultMap.get("result"), "id");
             mediaLocation = mediaBaseEndpoint + wpImageId;
+
+            //Add first image as featured image for post
+            if (Boolean.valueOf(imageFeatured)) {
+                json = "{\"id\":" + wpPostid + ",\"featured_media\":" + wpImageId + "}";
+                intermediateMap = wpc.post(postLocation, json);
+                if (WebClient.isBad(Integer.parseInt(intermediateMap.get("code").trim()))) {
+                    intermediateMap = wpc.post(postLocation, json);
+                }
+
+                if (WebClient.isBad(Integer.parseInt(intermediateMap.get("code").trim()))) {
+                    String errMsg = "Featured Image error for: " + imageName + " Code: " + intermediateMap.get("code") + " Response: " + intermediateMap.get("result");
+                    throw new Exception(errMsg);
+                }
+            }
+
+            json = "{\"id\":" + wpImageId + ",\"author\":" + imageAuthor + ",\"title\": \"" + imageName + "\",\"date_gmt\": \"" + imageDate + "\",\"caption\": \"" + imageCaption + "\",\"post\":" + wpPostid + "}";
+
+            intermediateMap = wpc.post(mediaLocation, json);
+            if (WebClient.isBad(Integer.parseInt(intermediateMap.get("code").trim()))) {
+                intermediateMap = wpc.post(mediaLocation, json);
+                if (WebClient.isBad(Integer.parseInt(intermediateMap.get("code").trim()))) {
+                    String errMsg = "Image Metadata error for: " + imageName + " Code: " + intermediateMap.get("code") + " Response: " + intermediateMap.get("result");
+                    throw new Exception(errMsg);
+                }
+            }
         } else {
             String errMsg = "Image post error for: " + imageName + " Code: " + resultMap.get("code") + " Response: " + resultMap.get("result");
             throw new Exception(errMsg);
-        }
-
-        //Add first image as featured image for post
-        if (Boolean.valueOf(imageFeatured)) {
-            json = "{\"id\":" + wpPostid + ",\"featured_media\":" + wpImageId + "}";
-            resultMap = wpc.post(postLocation, json);
-            if (WebClient.isBad(Integer.parseInt(resultMap.get("code").trim()))) {
-                resultMap = wpc.post(postLocation, json);
-            }
-
-            if (WebClient.isBad(Integer.parseInt(resultMap.get("code").trim()))) {
-                String errMsg = "Featured Image error for: " + imageName + " Code: " + resultMap.get("code") + " Response: " + resultMap.get("result");
-                throw new Exception(errMsg);
-            }
-        }
-
-        json = "{\"id\":" + wpImageId + ",\"author\":" + imageAuthor + ",\"title\": \"" + imageName + "\",\"date_gmt\": \"" + imageDate + "\",\"caption\": \"" + imageCaption + "\",\"post\":" + wpPostid + "}";
-
-        resultMap = wpc.post(mediaLocation, json);
-        if (WebClient.isBad(Integer.parseInt(resultMap.get("code").trim()))) {
-            resultMap = wpc.post(mediaLocation, json);
-            if (WebClient.isBad(Integer.parseInt(resultMap.get("code").trim()))) {
-                String errMsg = "Image Metadata error for: " + imageName + " Code: " + resultMap.get("code") + " Response: " + resultMap.get("result");
-                throw new Exception(errMsg);
-            }
         }
 
         resultMap.put("wpImageId", wpImageId);
