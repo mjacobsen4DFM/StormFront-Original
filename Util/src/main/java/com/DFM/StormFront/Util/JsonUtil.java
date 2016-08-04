@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class JsonUtil {
@@ -150,6 +152,12 @@ public class JsonUtil {
             throw new Exception(ExceptionUtil.getFullStackTrace(e));
         }
         return jsonArray;
+    }
+
+    public static List<JSONObject> getList(String json, String arrayName) throws Exception {
+        if( isNotWellFormed(json)) { return null; }
+        JSONObject jsonObject = (JSONObject) JSONValue.parse(json);
+        return (List<JSONObject>) jsonObject.get(arrayName);
     }
 
     public static String removeUnicode(String string) {

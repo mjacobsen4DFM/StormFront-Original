@@ -86,16 +86,16 @@ public class Broker {
     }
 
     @POST
-    @Path("/wordpress/posts/attributes")
+    @Path("/wordpress/posts/meta")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     //@HeaderParam("user-agent")
-    public Response PostAttributes(@HeaderParam("RedisType") String redisType,
+    public Response PostMeta(@HeaderParam("RedisType") String redisType,
                                    @HeaderParam("RedisKey") String redisKey,
                                    @HeaderParam("remoteEndpoint") String remoteEndpoint,
                                    InputStream incomingData) {
         if(null == redisType || redisType.equals("")) { redisType = "default"; }
-        return WordPressHandler.PostPost(redisType, redisKey, remoteEndpoint, incomingData);
+        return WordPressHandler.PostMeta(redisType, redisKey, remoteEndpoint, incomingData);
     }
 
     @PUT

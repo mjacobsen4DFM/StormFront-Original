@@ -33,7 +33,7 @@
         <Appliance.Adapter.version>0.2.5</Appliance.Adapter.version>
         <Appliance.Exec.version>0.1.16</Appliance.Exec.version>
         <Appliance.PubSubHub.version>0.10.10.2</Appliance.PubSubHub.version>
-        <Appliance.Interface.version>0.5.4</Appliance.Interface.version>
+        <Appliance.Interface.version>0.5.5.1</Appliance.Interface.version>
 <!--
         <Appliance.FixIt.version>0.1.1</Appliance.FixIt.version>
         <Appliance.Test.version>0.2.5</Appliance.Test.version>
