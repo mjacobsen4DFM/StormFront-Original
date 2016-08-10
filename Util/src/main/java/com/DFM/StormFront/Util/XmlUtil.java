@@ -193,7 +193,12 @@ public class XmlUtil {
     }
 
     public static String getFirstValue(Element parent, String nodeName) {
-        return parent.getElementsByTagName(nodeName).item(0).getFirstChild().getNodeValue();
+        if(parent.getElementsByTagName(nodeName).getLength() > 0 ) {
+            return parent.getElementsByTagName(nodeName).item(0).getFirstChild().getNodeValue();
+        }
+        else {
+            return null;
+        }
     }
 
     public static List<Element> getAllElementsByTagName(Element elem, String tagName) {
