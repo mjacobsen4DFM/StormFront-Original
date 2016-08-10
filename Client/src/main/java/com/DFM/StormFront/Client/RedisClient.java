@@ -54,10 +54,14 @@ public class RedisClient implements Serializable {
         this.host = resource.getString("redisHost_" + propertyInstance);
         this.port = Integer.parseInt(resource.getString("redisPort_" + propertyInstance));
         this.timeout = Integer.parseInt(resource.getString("redisTimeout_" + propertyInstance));
-        if (!resource.getString("redisPassword_" + propertyInstance).equalsIgnoreCase("")) {
+        if (!resource.containsKey("redisPassword_" + propertyInstance) || resource.getString("redisPassword_" + propertyInstance).equalsIgnoreCase("")) {
+            this.password = "";
+        } else {
             this.password = resource.getString("redisPassword_" + propertyInstance);
         }
-        if (!resource.getString("redisDatabase_" + propertyInstance).equalsIgnoreCase("")) {
+        if (!resource.containsKey("redisDatabase_" + propertyInstance) || resource.getString("redisDatabase_" + propertyInstance).equalsIgnoreCase("")) {
+            this.database = 0;
+        } else {
             this.database = Integer.parseInt(resource.getString("redisDatabase_" + propertyInstance));
         }
     }
