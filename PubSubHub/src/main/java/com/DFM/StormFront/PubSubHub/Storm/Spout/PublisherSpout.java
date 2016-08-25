@@ -33,24 +33,26 @@ public class PublisherSpout extends BaseRichSpout {
     private static Integer tupleCount = 0;
 
 
-    private static LogUtil _logUtil = new LogUtil();
+    private static LogUtil _logUtil;
 
     private static Fields _fields = new Fields("pubKey", "publisher");
     private static Values _values;
     private static Map<String, Object> _mainConf;
 
     public PublisherSpout(String publisherKeySearch){
+        _logUtil = new LogUtil();
         _logUtil.log("newspout", 4);
         _publisherKeySearch = publisherKeySearch;
     }
 
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector spoutOutputCollector) {
+        _logUtil = new LogUtil();
         _logUtil.log("open", 4);
         // Open the spout
         _mode = "storm";
         configure(conf);
-        _logUtil.level = Integer.parseInt(_redisClient.hget("config:storm", "loglevel"));
+        _logUtil.level = 3; //Integer.parseInt(_redisClient.hget("config:storm", "loglevel"));
         //Collect the rain
         _spoutOutputCollector = spoutOutputCollector;
     }
@@ -58,7 +60,7 @@ public class PublisherSpout extends BaseRichSpout {
     private void configure(Map conf) {
         _mainConf = conf;
         _redisClient = new RedisClient(conf);
-        _logUtil.level = Integer.parseInt(_redisClient.hget("config:" + _mode, "loglevel"));
+        _logUtil.level = 3; //Integer.parseInt(_redisClient.hget("config:" + _mode, "loglevel"));
         _hostname = SystemUtil.getHostname();
         _publisherKeySearch = (String) conf.get("publisherKeySearch");
         _logUtil.log("publisherKeySearch: " +  _publisherKeySearch);
@@ -70,7 +72,7 @@ public class PublisherSpout extends BaseRichSpout {
         _pubList.addAll(_pubs);
         _pubQueue.addAll(_pubs);
 
-        _logUtil.log(String.format("_pubs: %s, _pubList: %s ,_pubQueue: %s", _pubs.size(), _pubList.size(), _pubQueue.size()), "/home/storm/apache-storm/logs/spout.log");
+        _logUtil.log(String.format("_pubs: %s, _pubList: %s ,_pubQueue: %s", _pubs.size(), _pubList.size(), _pubQueue.size()), "spout.log");
 
     }
 
@@ -106,6 +108,7 @@ public class PublisherSpout extends BaseRichSpout {
     }
 
     public void linear(Map conf) {
+        _logUtil = new LogUtil();
         _logUtil.log("linear", 4);
         _mode = "linear";
         configure(conf);
@@ -232,7 +235,8 @@ public class PublisherSpout extends BaseRichSpout {
 
     @Override
     public void fail(Object pubKey) {
-        RedisLogUtil.logFail("PublisherSpout-> FAIL msgId = " + pubKey.toString(), _redisClient);
+        //RedisLogUtil.logFail("PublisherSpout-> FAIL msgId = " + pubKey.toString(), _redisClient);
+        _logUtil.log("PublisherSpout-> FAIL msgId = " + pubKey.toString(), 1);
         _pubQueue.add((String) pubKey);
     }
 

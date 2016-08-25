@@ -1,25 +1,25 @@
 package com.DFM.StormFront.Util;
 
+import org.apache.commons.lang.SystemUtils;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ResourceBundle;
 
 /**
  * Created by Mick on 4/16/2016.
  */
 public class FileUtil {
-    private static String _mainPathDev = "C:\\Users\\Mick\\Documents\\Cloud\\Google Drive\\mjacobsen@denverpost.com\\Dev\\mason\\share\\Projects\\Java\\StormFront\\Resources\\";
-    private static String _xsltPathDev = String.format("%s%s", _mainPathDev, "xslt\\");
-    private static String _mainPathLive = "/etc/storm/transactstorm/";
-    private static String _xsltPathLive = String.format("%s%s",_mainPathLive, "conf/xslt/");
-
-    public static String getXsltPath() {
-        return (SystemUtil.getHostname().equalsIgnoreCase("jacobsen2016")) ? _xsltPathDev : _xsltPathLive;
+    public static String getXsltDir() {
+        ResourceBundle config = ResourceBundle.getBundle("config");
+        return (SystemUtils.IS_OS_LINUX) ? config.getString("xsltDir_linux") : config.getString("xsltDir_windows");
     }
 
-    public static String getLogPath() {
-        return (SystemUtil.getHostname().equalsIgnoreCase("jacobsen2016")) ? _mainPathDev : _mainPathLive;
+    public static String getLogDir() {
+        ResourceBundle config = ResourceBundle.getBundle("config");
+        return (SystemUtils.IS_OS_LINUX) ? config.getString("logDir_linux") : config.getString("logDir_windows");
     }
 
     public static String readFile(String inputFile) throws Exception {

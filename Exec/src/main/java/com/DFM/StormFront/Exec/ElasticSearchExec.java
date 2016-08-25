@@ -65,10 +65,10 @@ public class ElasticSearchExec {
         String sArticle = JsonUtil.toJSON(article);
 
 /*
-        FileUtil.printFile(FileUtil.getLogPath(), "ContentSync", article.getCId(), "story", "txt", _story);
-        FileUtil.printFile(FileUtil.getLogPath(), "ContentSync", article.getCId(), "esXML", "txt", esXML);
+        FileUtil.printFile(FileUtil.getLogDir(), "ContentSync", article.getCId(), "story", "txt", _story);
+        FileUtil.printFile(FileUtil.getLogDir(), "ContentSync", article.getCId(), "esXML", "txt", esXML);
 */
-        FileUtil.printFile(FileUtil.getLogPath(), "ContentSync", article.getCId(), "sArticle", "txt", sArticle);
+        FileUtil.printFile(FileUtil.getLogDir(), "ContentSync", article.getCId(), "sArticle", "txt", sArticle);
 
         String index = _subscriberMap.get("index");
         String index_type = _subscriberMap.get("index_type");

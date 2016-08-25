@@ -27,17 +27,17 @@
     <version>dev</version>
 
     <properties>
-        <Appliance.Util.version>0.2.13</Appliance.Util.version>
+        <Appliance.Util.version>0.2.13.1</Appliance.Util.version>
         <Appliance.Model.version>0.4.2</Appliance.Model.version>
         <Appliance.Client.version>0.2.8</Appliance.Client.version>
         <Appliance.Adapter.version>0.2.5</Appliance.Adapter.version>
-        <Appliance.Exec.version>0.1.16</Appliance.Exec.version>
-        <Appliance.PubSubHub.version>0.10.10.2</Appliance.PubSubHub.version>
-        <Appliance.Interface.version>0.5.5.1</Appliance.Interface.version>
-<!--
-        <Appliance.FixIt.version>0.1.1</Appliance.FixIt.version>
-        <Appliance.Test.version>0.2.5</Appliance.Test.version>
--->
+        <Appliance.Exec.version>0.1.16.1</Appliance.Exec.version>
+        <Appliance.PubSubHub.version>0.10.11.1</Appliance.PubSubHub.version>
+        <!--
+                <Appliance.Interface.version>0.5.5.1</Appliance.Interface.version>
+                <Appliance.FixIt.version>0.1.1</Appliance.FixIt.version>
+                <Appliance.Test.version>0.2.5</Appliance.Test.version>
+        -->
     </properties>
 
     <modules>
@@ -47,11 +47,11 @@
         <module>Adapter</module>
         <module>Exec</module>
         <module>PubSubHub</module>
+        <!--
         <module>Interface</module>
-<!--
         <module>FixIt</module>
         <module>Test</module>
--->
+        -->
     </modules>
 
     <build>

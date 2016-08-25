@@ -86,10 +86,10 @@ public class NGPSExec {
         String base_file_name = remote_file_name.replace(".xml", "");
 
         operation = "Transform XML to NGPS";
-        xsltPath = FileUtil.getXsltPath() + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
+        xsltPath = FileUtil.getXsltDir() + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
         String ngpsXML = XmlUtil.transform(_story, xsltPath);
 
-        FileUtil.printFile(FileUtil.getLogPath(),"Hubsync", id + "_xml", file_name.replace(".xml", ""), "xml", ngpsXML);
+        FileUtil.printFile(FileUtil.getLogDir(),"Hubsync", id + "_xml", file_name.replace(".xml", ""), "xml", ngpsXML);
         InputStream uploadStream = StringUtil.toInputStream(ngpsXML);
 
         operation = "FTP";

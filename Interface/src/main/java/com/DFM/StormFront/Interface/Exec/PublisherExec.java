@@ -39,7 +39,7 @@ public class PublisherExec {
             conf.put("redisTimeout", Integer.toString(redisClient.getTimeout()));
             conf.put("redisPassword", redisClient.getPassword());
             conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
-            conf.put("xsltRootPath", FileUtil.getXsltPath());
+            conf.put("xsltRootPath", FileUtil.getXsltDir());
 
             keys = redisClient.hgetAll(pubKey);
             if(keys.size() > 0) {

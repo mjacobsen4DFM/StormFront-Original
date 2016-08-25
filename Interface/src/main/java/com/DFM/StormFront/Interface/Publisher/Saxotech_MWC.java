@@ -45,7 +45,7 @@ public class Saxotech_MWC {
     private static Boolean getContent(InputStream incomingData) throws Exception {
         String content = StringUtil.fromInputStream(incomingData);
 
-        FileUtil.printFile(FileUtil.getLogPath(), "SaxoTechMWC", "raw", "test", "txt", content);
+        FileUtil.printFile(FileUtil.getLogDir(), "SaxoTechMWC", "raw", "test", "txt", content);
         return true;
     }
 }

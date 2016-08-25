@@ -50,7 +50,7 @@ public class NGPS_ContentSync {
                 cId = article.getCId();
                 article.setDelete(bDelete);
 
-                FileUtil.printFile(FileUtil.getLogPath(), "ContentSync", article.getCId(), "incomingString", "txt", incomingString);
+                FileUtil.printFile(FileUtil.getLogDir(), "ContentSync", article.getCId(), "incomingString", "txt", incomingString);
 
                 xml = article.toXml();
 
