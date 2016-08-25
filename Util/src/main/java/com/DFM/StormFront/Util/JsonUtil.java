@@ -115,6 +115,7 @@ public class JsonUtil {
     public static String getValue(String json, String key) throws Exception {
         JSONObject jsonObj;
         JSONArray jsonArray;
+        String value;
         if(isNotWellFormed(json)) { return ""; }
         try {
 
@@ -126,11 +127,12 @@ public class JsonUtil {
                 jsonObj = (JSONObject) jsonArray.get(0);
             }
 
-            return (jsonObj.get(key) == null) ? "" : jsonObj.get(key).toString();
+            value = jsonObj.get(key).toString();
         } catch (ParseException e) {
             if (1 == 11) LogUtil.log("BAD JSON:" + json);
             throw new Exception(ExceptionUtil.getFullStackTrace(e));
         }
+        return value;
     }
 
     public static JSONArray getArray(String json) throws Exception {
