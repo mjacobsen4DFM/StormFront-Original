@@ -120,18 +120,22 @@ public class WordPressExec {
             resultMap = this.getPost(postLocation);
 
             String json = resultMap.get("body");
+            try {
+                String preCategories = JsonUtil.getValue(json, "categories");
+                String preTags = JsonUtil.getValue(json, "tags");
 
-            String preCategories = JsonUtil.getValue(json, "categories");
-            String preTags = JsonUtil.getValue(json, "tags");
+                preCategories = preCategories.replace("[", "").replace("]", "");
+                preTags = preTags.replace("[", "").replace("]", "");
 
-            preCategories = preCategories.replace("[", "").replace("]", "");
-            preTags = preTags.replace("[", "").replace("]", "");
-
-            if (StringUtil.isNotNullOrEmpty(preCategories)) {
-                categories.addAll(StringUtil.CSVtoArrayListInt(preCategories));
-            }
-            if (StringUtil.isNotNullOrEmpty(preTags)) {
-                tags.addAll(StringUtil.CSVtoArrayListInt(preTags));
+                if (StringUtil.isNotNullOrEmpty(preCategories)) {
+                    categories.addAll(StringUtil.CSVtoArrayListInt(preCategories));
+                }
+                if (StringUtil.isNotNullOrEmpty(preTags)) {
+                    tags.addAll(StringUtil.CSVtoArrayListInt(preTags));
+                }
+            } catch (Exception e) {
+                String msg = String.format("%s Error: from %s", operation, postLocation);
+                RedisLogUtil.logError(msg, e, this.redisClient);
             }
         }
 
