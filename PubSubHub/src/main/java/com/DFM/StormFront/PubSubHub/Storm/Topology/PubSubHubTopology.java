@@ -117,7 +117,7 @@ public class PubSubHubTopology {
             conf.put("publisherKeySearch", options.get("pubsearch"));
         } else {
             logUtil.log("Setting Search: publishers:*", "topology.log");
-            conf.put("publisherKeySearch", "publishers:*");
+            conf.put("publisherKeySearch", "publishers:AP:*");
         }
 
         options.put("publisherKeySearch", conf.get("publisherKeySearch"));
