@@ -135,7 +135,7 @@ public class WordPressExec {
                 }
             } catch (Exception e) {
                 String msg = String.format("%s Error: from %s", operation, postLocation);
-                RedisLogUtil.logError(msg, e, this.redisClient);
+                RedisLogUtil.logWarning(msg, e, this.redisClient);
             }
         }
 
@@ -158,35 +158,38 @@ public class WordPressExec {
             operation = "Post() Post Normalize";
             resultMap = this.postStory(_wpp, storyDataMap, postLocation);
 
-            if ((Boolean) storyDataMap.get("isNew")) {
-                operation = "Post() Gather Post Data";
-                wpPostId = resultMap.get("wpPostId");
-                _wpp.setID(wpPostId);
-                postLocation = resultMap.get("postLocation");
+            try {
+                if ((Boolean) storyDataMap.get("isNew")) {
+                    operation = "Post() Gather Post Data";
+                    wpPostId = resultMap.get("wpPostId");
+                    _wpp.setID(wpPostId);
+                    postLocation = resultMap.get("postLocation");
+                }
+
+                if ((postLocation == null || postLocation.equals("")) && (wpPostId == null || wpPostId.equals(""))) {
+                    //WTF?!
+                    throw new Exception("Both postLocation and wpPostId are NULL.");
+                } else if (postLocation == null || postLocation.equals("")) {
+                    postLocation = postBaseEndpoint + wpPostId;
+                }
+
+                LogUtil.log("postStory info: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
+
+                operation = "Post() Post Images";
+                this.postImages(wpPostId, postLocation, authorId, _wpp, mediaBaseEndpoint);
+
+                if ((Boolean) storyDataMap.get("isNew")) {
+                    operation = "Post() Post TrackingMeta";
+                    this.postTrackingMeta(postLocation);
+
+                    operation = "Post() Post StoryMeta";
+                    Map<String, Map<String, String>> storyMeta = this.getStoryMeta(wppXML);
+                    this.postStoryMeta(postLocation, storyMeta);
+                }
+            } catch (Exception e) {
+                String msg = String.format("%s Error: from %s", operation, postLocation);
+                RedisLogUtil.logWarning(msg, e, this.redisClient);
             }
-
-
-            if ((postLocation == null || postLocation.equals("")) && (wpPostId == null || wpPostId.equals(""))) {
-                //WTF?!
-                throw new Exception("Both postLocation and wpPostId are NULL.");
-            } else if (postLocation == null || postLocation.equals("")) {
-                postLocation = postBaseEndpoint + wpPostId;
-            }
-
-            LogUtil.log("postStory info: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
-
-            operation = "Post() Post Images";
-            this.postImages(wpPostId, postLocation, authorId, _wpp, mediaBaseEndpoint);
-
-            if ((Boolean) storyDataMap.get("isNew")) {
-                operation = "Post() Post TrackingMeta";
-                this.postTrackingMeta(postLocation);
-
-                operation = "Post() Post StoryMeta";
-                Map<String, Map<String, String>> storyMeta = this.getStoryMeta(wppXML);
-                this.postStoryMeta(postLocation, storyMeta);
-            }
-
             operation = "Post() All clear";
             LogUtil.log("Completed post into: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
         }
@@ -199,17 +202,22 @@ public class WordPressExec {
         String baseURI = _subscriberMap.get("url");
         String postBaseEndpoint = baseURI + "wp/v2/posts/";
 
-        operation = "Get() Get Existing Post ID";
-        Map<String, String> deliveredKeys = redisClient.hgetAll(_deliveredStoryKey);
-        String wpPostId = deliveredKeys.get("id");
+        try {
+            operation = "Get() Get Existing Post ID";
+            Map<String, String> deliveredKeys = redisClient.hgetAll(_deliveredStoryKey);
+            String wpPostId = deliveredKeys.get("id");
 
-        operation = "Get() Set postLocation";
-        postLocation = postBaseEndpoint + wpPostId;
-        apiMap = this.getPost(postLocation);
+            operation = "Get() Set postLocation";
+            postLocation = postBaseEndpoint + wpPostId;
+            apiMap = this.getPost(postLocation);
 
-        operation = "Get() Return Data";
-        resultMap.put("code", apiMap.get("code"));
-        resultMap.put("result", apiMap.get("body"));
+            operation = "Get() Return Data";
+            resultMap.put("code", apiMap.get("code"));
+            resultMap.put("result", apiMap.get("body"));
+        } catch (Exception e) {
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
+        }
 
         return resultMap;
     }
@@ -239,6 +247,8 @@ public class WordPressExec {
             keyCheck = "sequence";
             valCheck = "0";
             typeCheck = "int";
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
         //NOT catching exceptions, because if we don't know this metadata, the rest of the objects don't matter.
         return RedisContentUtil.createStoryStatusMap(_deliveredStoryKey, keyCheck, valCheck, typeCheck, this.redisClient);
@@ -261,15 +271,14 @@ public class WordPressExec {
                     value = XmlUtil.getFirstValue(element, "value");
                     Map<String, String> metaField = new HashMap<>();
                     metaField.put(key, value);
-
                 } catch (Exception e) {
                     String msg = String.format("getStoryMeta() Error: Publisher %s, url %s, title %s, Key %s, Value %s.", publisher.getPubKey(), publisher.getUrl(), _wpp.getTitle(), key, value);
                     RedisLogUtil.logError(msg, e, this.redisClient);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
         return storyMeta;
     }
@@ -301,22 +310,26 @@ public class WordPressExec {
 
             resultMap = postMeta(postLocation, metaHashMap);
         } catch (Exception e) {
-            RedisLogUtil.logError(e, this.redisClient);
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
         return resultMap;
     }
 
     public Map<String, String> postStoryMeta(String postLocation, Map<String, Map<String, String>> storyMeta) {
         Map<String, String> resultMap = new HashMap<>();
-
-
-        for (Map.Entry<String, Map<String, String>> metaEntry : storyMeta.entrySet()) {
-            try {
-                Map<String, String> fieldEntry = metaEntry.getValue();
-                resultMap = postMeta(postLocation, fieldEntry);
-            } catch (Exception e) {
-                RedisLogUtil.logError(e, redisClient);
+        try {
+            for (Map.Entry<String, Map<String, String>> metaEntry : storyMeta.entrySet()) {
+                try {
+                    Map<String, String> fieldEntry = metaEntry.getValue();
+                    resultMap = postMeta(postLocation, fieldEntry);
+                } catch (Exception e) {
+                    RedisLogUtil.logError(e, redisClient);
+                }
             }
+        } catch (Exception e) {
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
         return resultMap;
     }
@@ -329,16 +342,21 @@ public class WordPressExec {
         String key = "";
         Object value = "";
 
-        for (Map.Entry<String, String> entry : meta.entrySet()) {
-            try {
-                key = entry.getKey();
-                value = StringEscapeUtils.unescapeHtml(entry.getValue());
-                json = String.format("{ \"key\":\"%s\",\"value\":\"%s\" }", key, value);
-                resultMap = WordPressAdapter.postJson(json, postEndpoint, this.wordPressClient);
-            } catch (Exception e) {
-                String errMsg = "Meta post error for: " + key + "(" + value + ")" + " into Subscriber: " + _subscriberMap.get("name") + " at: " + postLocation + " for contentKey: " + _contentKey + " from feedKey: " + _feedKey + " " + ExceptionUtil.getFullStackTrace(e);
-                RedisLogUtil.logError(errMsg, this.redisClient);
+        try {
+            for (Map.Entry<String, String> entry : meta.entrySet()) {
+                try {
+                    key = entry.getKey();
+                    value = StringEscapeUtils.unescapeHtml(entry.getValue());
+                    json = String.format("{ \"key\":\"%s\",\"value\":\"%s\" }", key, value);
+                    resultMap = WordPressAdapter.postJson(json, postEndpoint, this.wordPressClient);
+                } catch (Exception e) {
+                    String errMsg = "Meta post error for: " + key + "(" + value + ")" + " into Subscriber: " + _subscriberMap.get("name") + " at: " + postLocation + " for contentKey: " + _contentKey + " from feedKey: " + _feedKey;
+                    RedisLogUtil.logError(errMsg, e, this.redisClient);
+                }
             }
+        } catch (Exception e) {
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
         return resultMap;
     }
@@ -367,8 +385,8 @@ public class WordPressExec {
                 }
             }
         } catch (Exception e) {
-            String errMsg = "Cat set error into: " + _subscriberMap.get("name") + " for catId: " + catId + " " + ExceptionUtil.getFullStackTrace(e);
-            RedisLogUtil.logError(errMsg, this.redisClient);
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
         return catList;
     }
@@ -393,8 +411,8 @@ public class WordPressExec {
                 }
             }
         } catch (Exception e) {
-            String errMsg = "Tag set error into: " + _subscriberMap.get("name") + " for tagId: " + tagId + " " + ExceptionUtil.getFullStackTrace(e);
-            RedisLogUtil.logError(errMsg, this.redisClient);
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
         return tagList;
     }
@@ -448,8 +466,8 @@ public class WordPressExec {
                 }
             }
         } catch (Exception e) {
-            String errMsg = "Image post error for: " + imageName + " into Subscriber: " + _subscriberMap.get("name") + " for: " + postLocation + ", Getting/Posting imageKey: " + imageKey + ", source: " + image.getSource() + ", " + ExceptionUtil.getFullStackTrace(e);
-            RedisLogUtil.logError(errMsg, this.redisClient);
+            String errMsg = "Image post error for: " + imageName + " into Subscriber: " + _subscriberMap.get("name") + " for: " + postLocation + ", Getting/Posting imageKey: " + imageKey + ", source: " + image.getSource();
+            RedisLogUtil.logWarning(errMsg, e, this.redisClient);
         }
         return resultMap;
     }
@@ -465,8 +483,10 @@ public class WordPressExec {
             postMap.put((String) storyDataMap.get("keyCheck"), (String) storyDataMap.get("valueCheck"));
             LogUtil.log("_deliveredStoryKey: " + _deliveredStoryKey + ", postMap: " + postMap.toString());
             RedisContentUtil.trackContent(_deliveredStoryKey, postMap, this.redisClient);
+
         } catch (Exception e) {
-            postMap.put("error", ExceptionUtil.getFullStackTrace(e));
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
     }
 
@@ -483,7 +503,8 @@ public class WordPressExec {
             imageHashMap.put("featured", featured);
             RedisContentUtil.trackContent(imageKey, imageHashMap, this.redisClient);
         } catch (Exception e) {
-            imageHashMap.put("error", ExceptionUtil.getFullStackTrace(e));
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
     }
 
