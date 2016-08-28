@@ -12,7 +12,7 @@ public class StormUtil {
         String tupleMsg = getTuple(tuple);
         RedisLogUtil.logError(tupleMsg, e, redisClient);
     }
-    
+
     public static void logFail(String msg, RedisClient redisClient) {
         RedisLogUtil.log(msg, redisClient, "StormFailures");
     }
