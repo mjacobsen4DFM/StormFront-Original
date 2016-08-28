@@ -29,7 +29,7 @@ public class PubSubHubTopology {
         builder.setSpout("PublisherSpout", new PublisherSpout(options.get("publisherKeySearch")), 1).setNumTasks(1);
 
         // Bolt to determine feed type and send to appropriate bolt based on feed class
-        builder.setBolt("FeedLoadBolt", new FeedLoadBolt(), 2).setNumTasks(4).shuffleGrouping("PublisherSpout");
+        builder.setBolt("FeedLoadBolt", new FeedLoadBolt(), 4).setNumTasks(8).shuffleGrouping("PublisherSpout");
 
         // Bolt to process Feed class
         builder.setBolt("FeedReaderBolt", new FeedReaderBolt(), 3).setNumTasks(6).shuffleGrouping("FeedLoadBolt");
@@ -39,10 +39,10 @@ public class PubSubHubTopology {
         builder.setBolt("MultiPhaseLoadBolt", new MultiPhaseLoadBolt(), 3).setNumTasks(6).shuffleGrouping("FeedReaderBolt", "MultiPhase");
 
         // Bolt to read story
-        builder.setBolt("StoryReaderBolt", new StoryReaderBolt(), 1).setNumTasks(1).fieldsGrouping("SinglePhaseLoadBolt", new Fields("storyGUID")).fieldsGrouping("MultiPhaseLoadBolt", new Fields("storyGUID"));
+        builder.setBolt("StoryReaderBolt", new StoryReaderBolt(), 2).setNumTasks(4).fieldsGrouping("SinglePhaseLoadBolt", new Fields("storyGUID")).fieldsGrouping("MultiPhaseLoadBolt", new Fields("storyGUID"));
 
         // Bolt to queue up subscribers
-        builder.setBolt("SubscriberBolt", new SubscriberBolt(), 2).setNumTasks(4).fieldsGrouping("StoryReaderBolt", new Fields("storyGUID"));
+        builder.setBolt("SubscriberBolt", new SubscriberBolt(), 3).setNumTasks(6).fieldsGrouping("StoryReaderBolt", new Fields("storyGUID"));
 
         // Bolts for subscribers
         builder.setBolt("WordPressBolt", new WordPressBolt(), 4).setNumTasks(8).fieldsGrouping("SubscriberBolt", "WordPress", new Fields("storyGUID"));
@@ -71,7 +71,7 @@ public class PubSubHubTopology {
         conf.setDebug(false);
         conf.setNumWorkers(4);
         conf.setMaxSpoutPending(1000);
-        conf.setMessageTimeoutSecs(300);
+        conf.setMessageTimeoutSecs(900);
         //conf.setMaxTaskParallelism(4);
         RedisClient redisClient = new RedisClient(options.get("loc"));
         conf.put("loc", options.get("loc"));
