@@ -28,11 +28,11 @@
 
     <properties>
         <Appliance.Util.version>0.2.13.1</Appliance.Util.version>
-        <Appliance.Model.version>0.4.2</Appliance.Model.version>
-        <Appliance.Client.version>0.2.8</Appliance.Client.version>
-        <Appliance.Adapter.version>0.2.5</Appliance.Adapter.version>
+        <Appliance.Model.version>0.4.2.0</Appliance.Model.version>
+        <Appliance.Client.version>0.2.8.0</Appliance.Client.version>
+        <Appliance.Adapter.version>0.2.5.0</Appliance.Adapter.version>
         <Appliance.Exec.version>0.1.16.1</Appliance.Exec.version>
-        <Appliance.PubSubHub.version>0.10.11.2</Appliance.PubSubHub.version>
+        <Appliance.PubSubHub.version>0.10.12.0</Appliance.PubSubHub.version>
         <!--
                 <Appliance.Interface.version>0.5.5.1</Appliance.Interface.version>
                 <Appliance.FixIt.version>0.1.1</Appliance.FixIt.version>
