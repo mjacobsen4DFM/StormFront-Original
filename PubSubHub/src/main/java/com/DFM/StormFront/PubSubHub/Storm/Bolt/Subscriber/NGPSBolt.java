@@ -7,9 +7,9 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
 import com.DFM.StormFront.Client.RedisClient;
 import com.DFM.StormFront.Client.Util.RedisContentUtil;
-import com.DFM.StormFront.Client.Util.RedisLogUtil;
 import com.DFM.StormFront.Exec.NGPSExec;
 import com.DFM.StormFront.Model.Publisher;
+import com.DFM.StormFront.PubSubHub.Util.StormUtil;
 import com.DFM.StormFront.Util.ExceptionUtil;
 import com.DFM.StormFront.Util.LogUtil;
 import com.DFM.StormFront.Util.SerializationUtil;
@@ -115,7 +115,7 @@ public class NGPSBolt extends BaseRichBolt {
     }
 
     private static void fail(String msg) {
-        RedisLogUtil.logError(msg, _redisClient);
+        StormUtil.logFail(msg, _redisClient);
         if (_deliveredStoryKey != null && RedisContentUtil.getMD5(_deliveredStoryKey, _redisClient) != null) {
             RedisContentUtil.resetMD5(_deliveredStoryKey, _redisClient);
         }

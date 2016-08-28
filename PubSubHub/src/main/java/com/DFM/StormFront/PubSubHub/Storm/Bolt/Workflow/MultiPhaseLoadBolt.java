@@ -9,12 +9,12 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.DFM.StormFront.Client.RedisClient;
 import com.DFM.StormFront.Client.Util.RedisContentUtil;
-import com.DFM.StormFront.Client.Util.RedisLogUtil;
 import com.DFM.StormFront.Client.WebClient;
-import com.DFM.StormFront.PubSubHub.Util.LinearControl;
-import com.DFM.StormFront.Model.Publisher;
 import com.DFM.StormFront.Model.Normalize.Story;
 import com.DFM.StormFront.Model.Normalize.StoryLinks;
+import com.DFM.StormFront.Model.Publisher;
+import com.DFM.StormFront.PubSubHub.Util.LinearControl;
+import com.DFM.StormFront.PubSubHub.Util.StormUtil;
 import com.DFM.StormFront.Util.ExceptionUtil;
 import com.DFM.StormFront.Util.LogUtil;
 import com.DFM.StormFront.Util.XmlUtil;
@@ -100,7 +100,7 @@ public class MultiPhaseLoadBolt extends BaseRichBolt {
             _collector.emit(_tuple, _values);
         } else {
             String msg = "MultiPhaseLoadBolt: both conf and tuple are null";
-            RedisLogUtil.logError(msg, _redisClient);
+            StormUtil.logFail(msg, _redisClient);
         }
     }
 
@@ -117,7 +117,7 @@ public class MultiPhaseLoadBolt extends BaseRichBolt {
     }
 
     private static void fail(String msg) {
-        RedisLogUtil.logError(msg, _redisClient);
+        StormUtil.logFail(msg, _redisClient);
         if (_feedKey != null && RedisContentUtil.getMD5(_feedKey, _redisClient) != null) {
             RedisContentUtil.resetMD5(_feedKey, _redisClient);
         }

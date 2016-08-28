@@ -49,7 +49,7 @@ public class RedisLogUtil {
         log(msg, redisClient, "info");
     }
 
-    private static void log(String msg, RedisClient redisClient, String level) {
+    public static void log(String msg, RedisClient redisClient, String level) {
         try {
             msg = (msg == null) ? "No message to log." : msg;
             LogUtil.log(msg);

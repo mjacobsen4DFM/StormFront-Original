@@ -11,8 +11,9 @@ import com.DFM.StormFront.Client.RedisClient;
 import com.DFM.StormFront.Client.Util.RedisContentUtil;
 import com.DFM.StormFront.Client.Util.RedisLogUtil;
 import com.DFM.StormFront.Exec.FeedReaderExec;
-import com.DFM.StormFront.PubSubHub.Util.LinearControl;
 import com.DFM.StormFront.Model.Publisher;
+import com.DFM.StormFront.PubSubHub.Util.LinearControl;
+import com.DFM.StormFront.PubSubHub.Util.StormUtil;
 import com.DFM.StormFront.Util.ExceptionUtil;
 import com.DFM.StormFront.Util.LogUtil;
 
@@ -73,7 +74,7 @@ public class FeedReaderBolt extends BaseRichBolt {
             _collector.emit(_phaseType, _tuple, _values);
         } else {
             String msg = "FeedReaderBolt: both conf and tuple are null";
-            RedisLogUtil.logError(msg, _redisClient);
+            StormUtil.logFail(msg, _redisClient);
         }
     }
 
@@ -90,7 +91,7 @@ public class FeedReaderBolt extends BaseRichBolt {
     }
 
     private static void fail(String msg) {
-        RedisLogUtil.logError(msg, _redisClient);
+        StormUtil.logFail(msg, _redisClient);
         if (_feedKey != null && RedisContentUtil.getMD5(_feedKey, _redisClient) != null) {
             RedisContentUtil.resetMD5(_feedKey, _redisClient);
         }
