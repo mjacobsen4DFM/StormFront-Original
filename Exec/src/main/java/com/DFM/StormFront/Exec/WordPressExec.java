@@ -273,7 +273,7 @@ public class WordPressExec {
                     metaField.put(key, value);
                 } catch (Exception e) {
                     String msg = String.format("getStoryMeta() Error: Publisher %s, url %s, title %s, Key %s, Value %s.", publisher.getPubKey(), publisher.getUrl(), _wpp.getTitle(), key, value);
-                    RedisLogUtil.logError(msg, e, this.redisClient);
+                    RedisLogUtil.logWarning(msg, e, this.redisClient);
                 }
             }
         } catch (Exception e) {
@@ -324,7 +324,8 @@ public class WordPressExec {
                     Map<String, String> fieldEntry = metaEntry.getValue();
                     resultMap = postMeta(postLocation, fieldEntry);
                 } catch (Exception e) {
-                    RedisLogUtil.logError(e, redisClient);
+                    String msg = String.format("%s Error: from %s", operation, postLocation);
+                    RedisLogUtil.logWarning(msg, e, this.redisClient);
                 }
             }
         } catch (Exception e) {
@@ -350,8 +351,8 @@ public class WordPressExec {
                     json = String.format("{ \"key\":\"%s\",\"value\":\"%s\" }", key, value);
                     resultMap = WordPressAdapter.postJson(json, postEndpoint, this.wordPressClient);
                 } catch (Exception e) {
-                    String errMsg = "Meta post error for: " + key + "(" + value + ")" + " into Subscriber: " + _subscriberMap.get("name") + " at: " + postLocation + " for contentKey: " + _contentKey + " from feedKey: " + _feedKey;
-                    RedisLogUtil.logError(errMsg, e, this.redisClient);
+                    String msg = "Meta post error for: " + key + "(" + value + ")" + " into Subscriber: " + _subscriberMap.get("name") + " at: " + postLocation + " for contentKey: " + _contentKey + " from feedKey: " + _feedKey;
+                    RedisLogUtil.logWarning(msg, e, this.redisClient);
                 }
             }
         } catch (Exception e) {
