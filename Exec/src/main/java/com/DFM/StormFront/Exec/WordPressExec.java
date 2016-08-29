@@ -451,6 +451,7 @@ public class WordPressExec {
                     bFeatured = (i == 0 && bNewFeature);
                     image = images[i];
                     if (image != null) {
+
                         String[] imageKeyArgs = {_deliveredStoryKey, "image", image.getGuid()};
                         imageKey = RedisContentUtil.setKey(imageKeyArgs);
                         //See if this image exists; if so, skip it

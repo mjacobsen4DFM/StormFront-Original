@@ -5,7 +5,7 @@ import org.glassfish.jersey.client.oauth1.AccessToken;
 import org.glassfish.jersey.client.oauth1.ConsumerCredentials;
 import org.glassfish.jersey.client.oauth1.OAuth1ClientSupport;
 import org.glassfish.jersey.jackson.JacksonFeature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
+//import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.client.Client;
@@ -148,7 +148,7 @@ public class WebOauth1Client {
         return ClientBuilder.newBuilder()
                 .register(filterFeature)
                 .register(JacksonFeature.class)
-                .register(MultiPartFeature.class)
+                //.register(MultiPartFeature.class)
                 //.withConfig(configuration)
                 .build();
     }
