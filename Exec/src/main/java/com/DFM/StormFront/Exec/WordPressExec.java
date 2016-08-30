@@ -177,7 +177,7 @@ public class WordPressExec {
                 LogUtil.log("postStory info: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
 
                 operation = "Post() Post Images";
-                this.postImages(wpPostId, postLocation, authorId, _wpp, mediaBaseEndpoint);
+                this.postImages(wpPostId, postLocation, authorId, _wpp, mediaBaseEndpoint, coauthorsBaseEndpoint);
 
                 if ((Boolean) storyDataMap.get("isNew")) {
                     operation = "Post() Post TrackingMeta";
@@ -445,7 +445,7 @@ public class WordPressExec {
         return tagList;
     }
 
-    public Map<String, String> postImages(String wpPostid, String postLocation, String authorId, WordPressPost wpp, String mediaBaseEndpoint) {
+    public Map<String, String> postImages(String wpPostId, String postLocation, String authorId, WordPressPost wpp, String mediaBaseEndpoint, String coauthorsBaseEndpoint) {
         Map<String, String> resultMap = new HashMap<>();
         Image image = new Image();
         String imageName = "";
@@ -460,37 +460,55 @@ public class WordPressExec {
 
                 //Look in Redis to see if any of these are already the feature
                 for (Image imageCheck : images) {
-                    // image = imageCheck.getImage();
-                    if (imageCheck != null) {
-                        String[] imageKeyArgs = {_deliveredStoryKey, "image", imageCheck.getGuid()};
-                        imageKey = RedisContentUtil.setKey(imageKeyArgs);
-                        if (RedisContentUtil.keyExists(imageKey, "featured", this.redisClient)) {
-                            //This image is already the featured image; prevent any others from trying
-                            bNewFeature = false;
+                    try {
+                        // image = imageCheck.getImage();
+                        if (imageCheck != null) {
+                            String[] imageKeyArgs = {_deliveredStoryKey, "image", imageCheck.getGuid()};
+                            imageKey = RedisContentUtil.setKey(imageKeyArgs);
+                            if (RedisContentUtil.keyExists(imageKey, "featured", this.redisClient)) {
+                                //This image is already the featured image; prevent any others from trying
+                                bNewFeature = false;
+                            }
                         }
+                    } catch (Exception e) {
+                        String errMsg = "Image post error for: " + imageName + " into Subscriber: " + _subscriberMap.get("name") + " for: " + postLocation + ", Getting/Posting imageKey: " + imageKey + ", source: " + image.getSource();
+                        RedisLogUtil.logWarning(errMsg, e, this.redisClient);
                     }
                 }
 
                 //Post images
                 for (int i = 0; i < images.length; i++) {
-                    //if this is the first image, and no others are featured, make this the featured image
-                    bFeatured = (i == 0 && bNewFeature);
-                    image = images[i];
-                    if (image != null) {
+                    try {
+                        //if this is the first image, and no others are featured, make this the featured image
+                        bFeatured = (i == 0 && bNewFeature);
+                        image = images[i];
+                        if (image != null) {
 
-                        String[] imageKeyArgs = {_deliveredStoryKey, "image", image.getGuid()};
-                        imageKey = RedisContentUtil.setKey(imageKeyArgs);
-                        //See if this image exists; if so, skip it
-                        if (RedisContentUtil.isNew(imageKey, "id", this.redisClient)) {
-                            imageName = StringUtil.hyphenateString(image.getName());
-                            json = "{ \"post_id\":" + wpPostid + ", \"postlocation\":\"" + postLocation + "\", \"name\":\"" + imageName.replace("\"", "\\\"") + "\", \"source\":\"" + image.getSource() + "\", \"mimetype\":\"" + image.getMimetype() + "\", \"caption\":\"" + image.getCaption().replace("\"", "\\\"") + "\", \"featured\":\"" + bFeatured + "\", \"author\":\"" + authorId + "\", \"date\":\"" + wpp.getDate() + "\" }";
-                            resultMap = WordPressAdapter.postMedia(json, mediaBaseEndpoint, this.wordPressClient);
-                            if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
-                                //Record this image so we can find it later
-                                recordImage(wpPostid, resultMap, image, imageKey, bFeatured.toString());
-                                LogUtil.log("postImages info: " + _subscriberMap.get("name") + " for: \"" + image.getSource() + "\" at: " + resultMap.get("mediaLocation"));
+                            String[] imageKeyArgs = {_deliveredStoryKey, "image", image.getGuid()};
+                            imageKey = RedisContentUtil.setKey(imageKeyArgs);
+                            //See if this image exists; if so, skip it
+                            if (RedisContentUtil.isNew(imageKey, "id", this.redisClient)) {
+                                imageName = StringUtil.hyphenateString(image.getName());
+                                json = "{ \"post_id\":" + wpPostId + ", \"postlocation\":\"" + postLocation + "\", \"name\":\"" + imageName.replace("\"", "\\\"") + "\", \"source\":\"" + image.getSource() + "\", \"mimetype\":\"" + image.getMimetype() + "\", \"caption\":\"" + image.getCaption().replace("\"", "\\\"") + "\", \"featured\":\"" + bFeatured + "\", \"author\":\"" + authorId + "\", \"date\":\"" + wpp.getDate() + "\" }";
+
+                                operation = "postImages(); postMedia()";
+                                resultMap = WordPressAdapter.postMedia(json, mediaBaseEndpoint, this.wordPressClient);
+
+                                if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
+                                    //Record this image so we can find it later
+                                    recordImage(wpPostId, resultMap, image, imageKey, bFeatured.toString());
+
+                                    String wpImageId = resultMap.get("wpImageId");
+                                    operation = "postImages() Image CoAuthor";
+                                    this.postCoAuthor(coauthorsBaseEndpoint, wpImageId);
+
+                                    LogUtil.log("postImages info: " + _subscriberMap.get("name") + " for: \"" + image.getSource() + "\" at: " + resultMap.get("mediaLocation"));
+                                }
                             }
                         }
+                    } catch (Exception e) {
+                        String errMsg = "Image post error for: " + imageName + " into Subscriber: " + _subscriberMap.get("name") + " for: " + postLocation + ", Getting/Posting imageKey: " + imageKey + ", source: " + image.getSource();
+                        RedisLogUtil.logWarning(errMsg, e, this.redisClient);
                     }
                 }
             }
