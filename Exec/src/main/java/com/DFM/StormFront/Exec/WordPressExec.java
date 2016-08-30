@@ -303,27 +303,24 @@ public class WordPressExec {
     }
 
 
-
     public Map<String, String> postCoAuthor(String coauthorsBaseEndpoint, String wpPostId) throws Exception {
         Map<String, String> resultMap = new HashMap<>();
         Integer authorId;
+        try {
+            if (StringUtil.isNotNullOrEmpty(_subscriberMap.get("guest-author-term-id"))) {
+                authorId = Integer.parseInt(_subscriberMap.get("guest-author-term-id"));
+            } else {
+                return resultMap;
+            }
 
-        if(StringUtil.isNotNullOrEmpty(_subscriberMap.get("guest-author-term-id"))) {
-            authorId = Integer.parseInt(_subscriberMap.get("guest-author-term-id"));
-        }
-        else {
-            return resultMap;
-        }
+            String json = String.format("{\"id\":[%s]}", authorId);
+            String capEndpoint = String.format("%s%s/author-terms/", coauthorsBaseEndpoint, wpPostId);
 
-        String json = String.format("{\"id\":[%s]}", authorId);
-        String capEndpoint = String.format("%s%s/author-terms/", coauthorsBaseEndpoint, wpPostId);
-
-        resultMap = WordPressAdapter.postJson(json, capEndpoint, this.wordPressClient);
-        if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
-            //Record this story so we can find it later
-            recordPost(resultMap, storyDataMap);
+            resultMap = WordPressAdapter.postJson(json, capEndpoint, this.wordPressClient);
+        } catch (Exception e) {
+            String msg = String.format("%s Error: from %s", operation, postLocation);
+            RedisLogUtil.logWarning(msg, e, this.redisClient);
         }
-        //NOT catching exceptions, because if the story doesn't post, the rest of the objects don't matter.
         return resultMap;
     }
 
