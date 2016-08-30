@@ -91,6 +91,7 @@ public class WordPressExec {
         String baseURI = _subscriberMap.get("url");
         String postBaseEndpoint = baseURI + "wp/v2/posts/";
         String mediaBaseEndpoint = baseURI + "wp/v2/media/";
+        String coauthorsBaseEndpoint = baseURI + "co-authors/v1/posts/";
         postLocation = postBaseEndpoint;
 
         operation = "Post() Transform XML";
@@ -185,6 +186,9 @@ public class WordPressExec {
                     operation = "Post() Post StoryMeta";
                     Map<String, Map<String, String>> storyMeta = this.getStoryMeta(wppXML);
                     this.postStoryMeta(postLocation, storyMeta);
+
+                    operation = "Post() CoAuthor";
+                    this.postCoAuthor(coauthorsBaseEndpoint, wpPostId);
                 }
             } catch (Exception e) {
                 String msg = String.format("%s Error: from %s", operation, postLocation);
@@ -290,6 +294,31 @@ public class WordPressExec {
         String json = JsonUtil.toJSON(wpp);
 
         resultMap = WordPressAdapter.postJson(json, postLocation, this.wordPressClient);
+        if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
+            //Record this story so we can find it later
+            recordPost(resultMap, storyDataMap);
+        }
+        //NOT catching exceptions, because if the story doesn't post, the rest of the objects don't matter.
+        return resultMap;
+    }
+
+
+
+    public Map<String, String> postCoAuthor(String coauthorsBaseEndpoint, String wpPostId) throws Exception {
+        Map<String, String> resultMap = new HashMap<>();
+        Integer authorId;
+
+        if(StringUtil.isNotNullOrEmpty(_subscriberMap.get("guest-author-term-id"))) {
+            authorId = Integer.parseInt(_subscriberMap.get("guest-author-term-id"));
+        }
+        else {
+            return resultMap;
+        }
+
+        String json = String.format("{\"id\":[%s]}", authorId);
+        String capEndpoint = String.format("%s%s/author-terms/", coauthorsBaseEndpoint, wpPostId);
+
+        resultMap = WordPressAdapter.postJson(json, capEndpoint, this.wordPressClient);
         if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
             //Record this story so we can find it later
             recordPost(resultMap, storyDataMap);
