@@ -14,7 +14,7 @@ public class StormUtil {
     }
 
     public static void logFail(String msg, RedisClient redisClient) {
-        RedisLogUtil.log(msg, redisClient, "StormFailures");
+        RedisLogUtil.log(msg, redisClient, "failures");
     }
 
     private static String getTuple(Tuple tuple) {

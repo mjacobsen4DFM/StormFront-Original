@@ -55,7 +55,7 @@ public class RedisLogUtil {
             LogUtil.log(msg);
             String hostname = SystemUtil.getHostname();
             String time = new Date().toString().replace(":", "-");
-            redisClient.set(level +":" + hostname + ":" + time, msg);
+            redisClient.set("logs:" + level +":" + hostname + ":" + time, msg);
         } catch (Exception ignored) {
         }
     }
