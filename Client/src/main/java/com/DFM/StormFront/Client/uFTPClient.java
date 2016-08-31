@@ -6,7 +6,6 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,52 +35,16 @@ public class uFTPClient {
 
     public Map<String, String> put(String workingDirectory, String localFilename, String remoteFilename) {
         Map<String, String> resultMap = new HashMap<>();
-        boolean status;
-        FTPClient ftpClient = new FTPClient();
         try {
-
-            ftpClient.connect(this.host, this.port);
-            ftpClient.login(this.username, this.password);
-            ftpClient.enterLocalPassiveMode();
-
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            ftpClient.changeWorkingDirectory(workingDirectory);
-
             File localFile = new File(localFilename);
-
             InputStream inputStream = new FileInputStream(localFile);
-
-            status = ftpClient.storeFile(remoteFilename, inputStream);
-            inputStream.close();
-
-            if(status){
-                resultMap.put("code", "200");
-                resultMap.put("result", "success");
-            } else {
-                resultMap.put("code", "400");
-                resultMap.put("result", "failure");
-            }
-
+            return this.put(workingDirectory,inputStream,remoteFilename);
         } catch (IOException e) {
             LogUtil.log("Error: " + e.getMessage());
-            e.printStackTrace();
-            resultMap.put("code", "400");
-            resultMap.put("error", Arrays.toString(e.getStackTrace()));
-            resultMap.put("result", "failure");
-        } finally {
-            try {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
-                }
-            } catch (IOException e) {
-                resultMap.put("code", "500");
-                resultMap.put("error", Arrays.toString(e.getStackTrace()));
-                resultMap.put("result", "failure");
-            }
+            resultMap.put("code", "500");
+            resultMap.put("result", ExceptionUtil.getFullStackTrace(e));
+            return resultMap;
         }
-
-        return resultMap;
     }
 
     public Map<String, String> put(String workingDirectory, InputStream inputStream, String remoteFilename) {
