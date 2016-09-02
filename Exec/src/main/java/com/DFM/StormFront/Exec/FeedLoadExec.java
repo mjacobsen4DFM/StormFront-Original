@@ -13,6 +13,7 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.Map;
 
 /**
  * Created by Mick on 4/21/2016.
@@ -29,7 +30,13 @@ public class FeedLoadExec {
         if(null == publisher.getUrl()) { return ""; }
         WebClient client = new WebClient(publisher);
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        String body = client.get();
+        Map<String, String> resultMap = client.get();
+
+        if (WebClient.isBad(Integer.valueOf(resultMap.get("code")))) {
+            throw new Exception("WebClient error: " + publisher.getUrl() + " Code: " + resultMap.get("code") + " Reason: " + resultMap.get("body"));
+        }
+
+        String body = resultMap.get("body");
         if ( ! XmlUtil.isWellFormed(body)){
             throw new Exception("XML was not wellformed from " + publisher.getUrl() + " XML: " + body);
         }

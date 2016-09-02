@@ -77,7 +77,11 @@ public class MultiPhaseLoadBolt extends BaseRichBolt {
                     sourceURL = link.trim();
                     contentMap.put("sourceURL", sourceURL);
                     client.setUrl(sourceURL);
-                    phaseStory += client.get();
+                    Map<String, String> resultMap = client.get();
+                    if (WebClient.isBad(Integer.valueOf(resultMap.get("code")))) {
+                        throw new Exception("WebClient error: " + sourceURL + " Code: " + resultMap.get("code") + " Reason: " + resultMap.get("body"));
+                    }
+                    phaseStory += resultMap.get("body");
                 }
 
                 contentMap.put("updateCheck", story.getupdateCheck());

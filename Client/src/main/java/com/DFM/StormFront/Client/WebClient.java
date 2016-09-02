@@ -22,8 +22,6 @@ import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class WebClient {
@@ -118,10 +116,11 @@ public class WebClient {
         this.username = username;
     }
 
-    public String get() throws IOException {
+    public HashMap<String, String> get() throws IOException {
+        HashMap<String, String> resultMap = new HashMap<>();
         BufferedReader reader = null;
         HttpResponse response = null;
-        String result = "";
+        String body = "";
         try {
             String credentials = this.username + ":" + this.password;
             String credentials64 = Base64.encodeBase64URLSafeString(credentials.getBytes());
@@ -135,13 +134,24 @@ public class WebClient {
             request.setHeader("Authorization", authorizationString);
 
             response = client.execute(request);
-            reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                result += line;
+
+            StatusLine statusLine = response.getStatusLine();
+            if (WebClient.isOK(statusLine.getStatusCode())) {
+                reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    body += line;
+                }
             }
+            else{
+                body = statusLine.getReasonPhrase();
+            }
+
+            resultMap.put("code", String.valueOf(statusLine.getStatusCode()));
+            resultMap.put("body", body);
         } catch (Exception e) {
-            LogUtil.log("GET ERROR: " + ExceptionUtil.getFullStackTrace(e) + " for " + this.url);
+            resultMap.put("code", String.valueOf(600));
+            resultMap.put("body", ExceptionUtil.getFullStackTrace(e));
         } finally {
             try {
                 if (null != reader) {
@@ -151,12 +161,12 @@ public class WebClient {
                     EntityUtils.consume(response.getEntity());
                 }
             } catch (Exception e) {
-                LogUtil.log("GET ERROR (final): " + ExceptionUtil.getFullStackTrace(e) + " for " + this.url);
-                Logger.getLogger(WebClient.class.getName()).log(Level.SEVERE, null, e);
+                resultMap.put("code", String.valueOf(600));
+                resultMap.put("body", ExceptionUtil.getFullStackTrace(e));
             }
         }
 
-        return result;
+        return resultMap;
     }
 
     public HashMap<String, String> get(String url, HashMap<String, String> headers) throws IOException {
@@ -169,7 +179,7 @@ public class WebClient {
         HashMap<String, String> resultMap = new HashMap<>();
         BufferedReader reader = null;
         HttpResponse response = null;
-        String result = "";
+        String body = "";
         try {
             HttpClient client = HttpClientBuilder.create().build();
             HttpGet request = new HttpGet(this.getUrl());
@@ -178,13 +188,24 @@ public class WebClient {
             }
 
             response = client.execute(request);
-            reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                result += line;
+
+            StatusLine statusLine = response.getStatusLine();
+            if (WebClient.isOK(statusLine.getStatusCode())) {
+                reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    body += line;
+                }
             }
+            else{
+                body = statusLine.getReasonPhrase();
+            }
+
+            resultMap.put("code", String.valueOf(statusLine.getStatusCode()));
+            resultMap.put("body", body);
         } catch (Exception e) {
-            LogUtil.log("GET ERROR: " + ExceptionUtil.getFullStackTrace(e) + " for " + this.url);
+            resultMap.put("code", String.valueOf(600));
+            resultMap.put("body", ExceptionUtil.getFullStackTrace(e));
         } finally {
             try {
                 if (null != reader) {
@@ -192,13 +213,11 @@ public class WebClient {
                 }
                 EntityUtils.consume(response.getEntity());
             } catch (IOException e) {
-                LogUtil.log("GET ERROR (final): " + ExceptionUtil.getFullStackTrace(e) + " for " + this.url);
-                Logger.getLogger(WebClient.class.getName()).log(Level.SEVERE, null, e);
+                resultMap.put("code", String.valueOf(600));
+                resultMap.put("body", ExceptionUtil.getFullStackTrace(e));
             }
         }
 
-        resultMap.put("code", "200");
-        resultMap.put("result", result);
         return resultMap;
     }
 
@@ -209,101 +228,119 @@ public class WebClient {
 
     public HashMap<String, String> put(HashMap<String, String> headers, String json) throws IOException {
         HashMap<String, String> resultMap = new HashMap<>();
+        BufferedReader reader;
+        HttpResponse response;
         String result = "";
-        HttpClient client = HttpClientBuilder.create().build();
-        //if (1==11) LogUtil.log("PUT: " + url);
-        HttpPut put = new HttpPut(this.url);
-        for (Map.Entry<String, String> header : headers.entrySet()) {
-            put.setHeader(new BasicHeader(header.getKey(), header.getValue()));
-        }
-        //if (1==11) LogUtil.log("JSON: " + json);
-        StringEntity input = new StringEntity(json);
-        put.setEntity(input);
-        HttpResponse response = client.execute(put);
-        StatusLine sl = response.getStatusLine();
-        if (sl.getStatusCode() >= 200 && sl.getStatusCode() < 300) {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                result += line;
+        try {
+            HttpClient client = HttpClientBuilder.create().build();
+            //if (1==11) LogUtil.log("PUT: " + url);
+            HttpPut put = new HttpPut(this.url);
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                put.setHeader(new BasicHeader(header.getKey(), header.getValue()));
             }
-        } else {
-            result = sl.getReasonPhrase();
+            //if (1==11) LogUtil.log("JSON: " + json);
+            StringEntity input = new StringEntity(json);
+            put.setEntity(input);
+
+            response = client.execute(put);
+
+            StatusLine statusLine = response.getStatusLine();
+            if (WebClient.isOK(statusLine.getStatusCode())) {
+                reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    result += line;
+                }
+            }
+            else{
+                result = statusLine.getReasonPhrase();
+            }
+
+            resultMap.put("code", String.valueOf(statusLine.getStatusCode()));
+            resultMap.put("result", result);
+        } catch (Exception e) {
+            resultMap.put("code", String.valueOf(600));
+            resultMap.put("result", ExceptionUtil.getFullStackTrace(e));
         }
-        resultMap.put("code", Integer.toString(sl.getStatusCode()));
-        resultMap.put("result", result);
         return resultMap;
     }
 
     public HashMap<String, String> post(String endpoint, String json) throws IOException {
-        String result = "";
-        String url = endpoint;
-        if (2 == 2) LogUtil.log("No Creds URL: " + url);
-        String credentials = this.getUsername() + ":" + this.getPassword();
-        //if (1==11) LogUtil.log("credentials: " + credentials);
-        String credentials64 = Base64.encodeBase64URLSafeString(credentials.getBytes());
-        while ((credentials64.length() % 4) > 0) {
-            credentials64 += "=";
-        }
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpPost post = new HttpPost(url);
-        post.setHeader("Authorization", "Basic " + credentials64);
-        post.setHeader(new BasicHeader("Content-Type", "application/json"));
-        post.setHeader(new BasicHeader("Accept", "application/json"));
-        //if (1==11) LogUtil.log("JSON: " + json);
-        StringEntity input = new StringEntity(json);
-        post.setEntity(input);
-        HttpResponse response = client.execute(post);
-        StatusLine sl = response.getStatusLine();
-        if (WebClient.isOK(sl.getStatusCode())) {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                result += line;
-            }
-        } else {
-            result = sl.getReasonPhrase();
-        }
         HashMap<String, String> resultMap = new HashMap<>();
-        resultMap.put("code", Integer.toString(sl.getStatusCode()));
-        resultMap.put("result", result);
+        BufferedReader reader;
+        HttpResponse response;
+        String result = "";
+        try {
+            if (2 == 2) LogUtil.log("No Creds URL: " + endpoint);
+            String credentials = this.getUsername() + ":" + this.getPassword();
+            //if (1==11) LogUtil.log("credentials: " + credentials);
+            String credentials64 = Base64.encodeBase64URLSafeString(credentials.getBytes());
+            while ((credentials64.length() % 4) > 0) {
+                credentials64 += "=";
+            }
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpPost post = new HttpPost(endpoint);
+            post.setHeader("Authorization", "Basic " + credentials64);
+            post.setHeader(new BasicHeader("Content-Type", "application/json"));
+            post.setHeader(new BasicHeader("Accept", "application/json"));
+            //if (1==11) LogUtil.log("JSON: " + json);
+            StringEntity input = new StringEntity(json);
+            post.setEntity(input);
+            response = client.execute(post);
+            StatusLine statusLine = response.getStatusLine();
+            if (WebClient.isOK(statusLine.getStatusCode())) {
+                reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    result += line;
+                }
+            } else {
+                result = statusLine.getReasonPhrase();
+            }
+            resultMap.put("code", Integer.toString(statusLine.getStatusCode()));
+            resultMap.put("result", result);
+        } catch (Exception e) {
+            resultMap.put("code", String.valueOf(600));
+            resultMap.put("result", ExceptionUtil.getFullStackTrace(e));
+        }
         return resultMap;
     }
 
     public HashMap<String, String> delete(String endpoint) throws IOException {
         HashMap<String, String> resultMap = new HashMap<>();
+        BufferedReader reader;
+        HttpResponse response;
         String result = "";
-        String url = endpoint;
-        String credentials = this.getUsername() + ":" + this.getPassword();
-        //if (1==11) LogUtil.log("credentials: " + credentials);
-        String credentials64 = Base64.encodeBase64URLSafeString(credentials.getBytes());
-        while ((credentials64.length() % 4) > 0) {
-            credentials64 += "=";
-        }
-        HttpClient client = HttpClientBuilder.create().build();
-        if (9 == 9) LogUtil.log("DELETE: " + url);
-        HttpDelete delete = new HttpDelete();
-        delete.setHeader("Authorization", "Basic " + credentials64);
-        delete.setHeader(new BasicHeader("Content-Type", "application/json"));
-        delete.setHeader(new BasicHeader("Accept", "application/json"));
+
         try {
-            if (9 == 9) LogUtil.log("DELETE start: " + url);
-            HttpResponse response = client.execute(delete);
-            if (9 == 9) LogUtil.log("DELETE end: " + url);
-            StatusLine sl = response.getStatusLine();
-            if (sl.getStatusCode() >= 200 && sl.getStatusCode() < 300) {
-                BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            String credentials = this.getUsername() + ":" + this.getPassword();
+            //if (1==11) LogUtil.log("credentials: " + credentials);
+            String credentials64 = Base64.encodeBase64URLSafeString(credentials.getBytes());
+            while ((credentials64.length() % 4) > 0) {
+                credentials64 += "=";
+            }
+            HttpClient client = HttpClientBuilder.create().build();
+            if (9 == 9) LogUtil.log("DELETE: " + endpoint);
+            HttpDelete delete = new HttpDelete();
+            delete.setHeader("Authorization", "Basic " + credentials64);
+            delete.setHeader(new BasicHeader("Content-Type", "application/json"));
+            delete.setHeader(new BasicHeader("Accept", "application/json"));
+            if (9 == 9) LogUtil.log("DELETE start: " + endpoint);
+            response = client.execute(delete);
+            if (9 == 9) LogUtil.log("DELETE end: " + endpoint);
+            StatusLine statusLine = response.getStatusLine();
+            if (WebClient.isOK(statusLine.getStatusCode())) {
+                 reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                 String line;
-                while ((line = rd.readLine()) != null) {
+                while ((line = reader.readLine()) != null) {
                     result += line;
                 }
             } else {
-                result = sl.getReasonPhrase();
+                result = statusLine.getReasonPhrase();
             }
-            resultMap.put("code", Integer.toString(sl.getStatusCode()));
+            resultMap.put("code", Integer.toString(statusLine.getStatusCode()));
             resultMap.put("result", result);
         } catch (java.lang.NullPointerException e) {
-            if (9 == 9) LogUtil.log("DELETE ERROR: " + ExceptionUtil.getFullStackTrace(e));
             resultMap.put("code", "500");
             resultMap.put("result", ExceptionUtil.getFullStackTrace(e));
         }
@@ -312,25 +349,32 @@ public class WebClient {
 
     public HashMap<String, String> delete(HashMap<String, String> headers) throws IOException {
         HashMap<String, String> resultMap = new HashMap<>();
+        BufferedReader reader;
+        HttpResponse response;
         String result = "";
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpDelete delete = new HttpDelete(this.url);
-        for (Map.Entry<String, String> header : headers.entrySet()) {
-            delete.setHeader(new BasicHeader(header.getKey(), header.getValue()));
-        }
-        HttpResponse response = client.execute(delete);
-        StatusLine sl = response.getStatusLine();
-        if (sl.getStatusCode() >= 200 && sl.getStatusCode() < 300) {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                result += line;
+        try {
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpDelete delete = new HttpDelete(this.url);
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                delete.setHeader(new BasicHeader(header.getKey(), header.getValue()));
             }
-        } else {
-            result = sl.getReasonPhrase();
+             response = client.execute(delete);
+            StatusLine statusLine = response.getStatusLine();
+            if (WebClient.isOK(statusLine.getStatusCode())) {
+                reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    result += line;
+                }
+            } else {
+                result = statusLine.getReasonPhrase();
+            }
+            resultMap.put("code", Integer.toString(statusLine.getStatusCode()));
+            resultMap.put("result", result);
+        } catch (java.lang.NullPointerException e) {
+            resultMap.put("code", "500");
+            resultMap.put("result", ExceptionUtil.getFullStackTrace(e));
         }
-        resultMap.put("code", Integer.toString(sl.getStatusCode()));
-        resultMap.put("result", result);
         return resultMap;
     }
 
