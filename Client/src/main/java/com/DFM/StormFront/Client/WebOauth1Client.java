@@ -92,7 +92,8 @@ public class WebOauth1Client {
         WebTarget target = client.target(uri);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-        ImageIO.write(image, "jpg", baos);
+        String formatName = (imageType.contains("/")) ? imageType.split("/")[1] : imageType;
+        ImageIO.write(image, formatName, baos);
 
         byte[] bits = baos.toByteArray();
 
