@@ -4,8 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.xml.sax.InputSource;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class StringUtil {
@@ -126,5 +125,20 @@ public class StringUtil {
 		}
         reader.close();
         return out.toString();
+	}
+
+	public static boolean toBoolean(String booleanValue) {
+		booleanValue = booleanValue.trim().toLowerCase();
+		List<String> trueSet = Arrays.asList("1", "true", "yes");
+		List<String> falseSet = Arrays.asList("0", "false", "no");
+
+		if (trueSet.contains(booleanValue)) {
+			return true;
+		}
+		if (falseSet.contains(booleanValue)) {
+			return false;
+		}
+
+		throw new IllegalArgumentException(booleanValue + " is not a boolean.");
 	}
 }
