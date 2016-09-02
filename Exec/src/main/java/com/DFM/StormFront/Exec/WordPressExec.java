@@ -425,6 +425,17 @@ public class WordPressExec {
         String tagId = "";
 
         try {
+            //Get tag based on sourcename
+            String source = _wpp.getSource();
+            tagKey = _tagKeyRoot + ":" + source;
+            if (2 == 9) LogUtil.log("findTagKey: " + tagKey);
+            tagId = this.redisClient.hget(tagKey, "id");
+            if (tagId != null) {
+                if (2 == 9) LogUtil.log("addTagKey: " + tagKey);
+                tagList.add(Integer.parseInt(tagId));
+            }
+
+            //Get tags based on subjects
             StorySubjects storySubjects = StorySubjects.fromXML(_subjectsXML);
             String[] tags = storySubjects.getSubjectsXML();
             if (tags != null && tags.length > 0) {
