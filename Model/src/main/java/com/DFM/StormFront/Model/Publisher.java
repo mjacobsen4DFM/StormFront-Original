@@ -2,6 +2,7 @@ package com.DFM.StormFront.Model;
 
 import com.DFM.StormFront.Util.ExceptionUtil;
 import com.DFM.StormFront.Util.SerializationUtil;
+import com.DFM.StormFront.Util.StringUtil;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -25,8 +26,10 @@ public class Publisher implements Serializable {
     private String itemNamespace;
     private String sortOrder;
     private String username;
-    private String password;
     private String oauthkey;
+    private String password;
+    private Boolean active;
+
 
 
     public Publisher() {
@@ -55,6 +58,7 @@ public class Publisher implements Serializable {
         this.sourceType = keys.get("sourceType");
         this.phaseType = keys.get("phaseType");
         this.updateCheckType = keys.get("updateCheckType");
+        this.setActive((keys.get("active")));
     }
 
     public Publisher(byte[] serializedFeed) throws Exception {
@@ -81,6 +85,7 @@ public class Publisher implements Serializable {
         this.sourceType = feed.getSourceType();
         this.phaseType = feed.getPhaseType();
         this.updateCheckType = feed.getUpdateCheckType();
+        this.active = feed.getActive();
     }
 
     public Integer getPubid() {
@@ -217,5 +222,23 @@ public class Publisher implements Serializable {
 
     public void setUpdateCheckType(String updateCheckType) {
         this.updateCheckType = updateCheckType;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public void setActive(String active) {
+        if(StringUtil.isNotNullOrEmpty(active)) {
+            active = active.trim();
+            this.active = StringUtil.toBoolean(active);
+        } else {
+            //Assume active for publishers without hte key
+            this.active = true;
+        }
     }
 }

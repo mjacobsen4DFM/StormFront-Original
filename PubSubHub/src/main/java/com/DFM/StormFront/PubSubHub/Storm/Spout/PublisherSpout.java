@@ -19,7 +19,7 @@ import java.util.*;
 public class PublisherSpout extends BaseRichSpout {
     private static final long serialVersionUID = 1L;
     private static String _mode = "unknown";
-    
+
     private static SpoutOutputCollector _spoutOutputCollector;
     private static String _publisherKeySearch = "";
     private static String _hostname = "Unknown";
@@ -85,8 +85,10 @@ public class PublisherSpout extends BaseRichSpout {
                 _keys = _redisClient.hgetAll(_pubKey);
                 _keys.put("pubKey", _pubKey);
                 _publisher = new Publisher(_keys);
-                byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
-                emit(_pubKey, binaryPublisher, _pubKey);
+                if(_publisher.getActive()) {
+                    byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
+                    emit(_pubKey, binaryPublisher, _pubKey);
+                }
             }
         } catch (Exception e) {
             String errMsg = "Spout(" + _pubKey + "), " + ExceptionUtil.getFullStackTrace(e);
