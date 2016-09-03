@@ -274,8 +274,10 @@ public class WordPressExec {
                     key = XmlUtil.getFirstValue(element, "key");
                     value = XmlUtil.getFirstValue(element, "value");
                     Map<String, String> metaField = new HashMap<>();
-                    metaField.put(key, value);
-                    storyMeta.put(String.format("%s%s", element.getTagName(), Integer.toString(i)), metaField);
+                    if(StringUtil.isNotNullOrEmpty(value)) {
+                        metaField.put(key, value);
+                        storyMeta.put(String.format("%s%s", element.getTagName(), Integer.toString(i)), metaField);
+                    }
                 } catch (Exception e) {
                     String msg = String.format("getStoryMeta() Error: Publisher %s, url %s, title %s, Key %s, Value %s.", publisher.getPubKey(), publisher.getUrl(), _wpp.getTitle(), key, value);
                     RedisLogUtil.logWarning(msg, e, this.redisClient);
