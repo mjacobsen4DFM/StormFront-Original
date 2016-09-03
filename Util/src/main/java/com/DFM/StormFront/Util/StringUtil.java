@@ -141,4 +141,12 @@ public class StringUtil {
 
 		throw new IllegalArgumentException(booleanValue + " is not a boolean.");
 	}
+
+	public static String NVL(String value, String defaut){
+		if(StringUtils.isEmpty(value)) {
+			return defaut;
+		} else {
+			return value;
+		}
+	}
 }

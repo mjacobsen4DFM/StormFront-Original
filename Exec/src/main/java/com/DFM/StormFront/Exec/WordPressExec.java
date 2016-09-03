@@ -557,7 +557,7 @@ public class WordPressExec {
         try {
             String wpImageId = JsonUtil.getValue(imagePostMap.get("result"), "id");
             String mediaLocation = imagePostMap.get("mediaLocation");
-            imageHashMap.put("guid", image.getGuid());
+            imageHashMap.put("guid", StringUtil.NVL(image.getGuid(), imageKey));
             imageHashMap.put("location", mediaLocation);
             imageHashMap.put("id", wpImageId);
             imageHashMap.put("postid", wpPostid);
