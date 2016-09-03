@@ -459,6 +459,7 @@ public class WordPressExec {
     public Map<String, String> postImages(String wpPostId, String postLocation, String authorId, WordPressPost wpp, String mediaBaseEndpoint, String coauthorsBaseEndpoint) {
         Map<String, String> resultMap = new HashMap<>();
         Image image = new Image();
+        String mimeType = "";
         String imageName = "";
         String imageKey = "";
         String json;
@@ -499,8 +500,11 @@ public class WordPressExec {
                             imageKey = RedisContentUtil.setKey(imageKeyArgs);
                             //See if this image exists; if so, skip it
                             if (RedisContentUtil.isNew(imageKey, "id", this.redisClient)) {
+                                mimeType = image.getMimetype();
                                 imageName = StringUtil.hyphenateString(image.getName());
-                                json = "{ \"post_id\":" + wpPostId + ", \"postlocation\":\"" + postLocation + "\", \"name\":\"" + imageName.replace("\"", "\\\"") + "\", \"source\":\"" + image.getSource() + "\", \"mimetype\":\"" + image.getMimetype() + "\", \"caption\":\"" + image.getCaption().replace("\"", "\\\"") + "\", \"featured\":\"" + bFeatured + "\", \"author\":\"" + authorId + "\", \"date\":\"" + wpp.getDate() + "\" }";
+                                imageName = FileUtil.setImageFileExtension(imageName, mimeType);
+                                imageName = imageName.replace("\"", "\\\"");
+                                json = "{ \"post_id\":" + wpPostId + ", \"postlocation\":\"" + postLocation + "\", \"name\":\"" + imageName + "\", \"source\":\"" + image.getSource() + "\", \"mimetype\":\"" + mimeType + "\", \"caption\":\"" + image.getCaption().replace("\"", "\\\"") + "\", \"featured\":\"" + bFeatured + "\", \"author\":\"" + authorId + "\", \"date\":\"" + wpp.getDate() + "\" }";
 
                                 operation = "postImages(); postMedia()";
                                 resultMap = WordPressAdapter.postMedia(json, mediaBaseEndpoint, this.wordPressClient);
