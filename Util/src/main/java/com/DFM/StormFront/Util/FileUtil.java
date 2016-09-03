@@ -6,7 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Created by Mick on 4/16/2016.
@@ -55,6 +55,42 @@ public class FileUtil {
             out.close();
         } catch (Exception e) {
             throw new Exception(ExceptionUtil.getFullStackTrace(e));
+        }
+    }
+
+    public static String setImageFileExtension(String imageName, String mimeType) {
+        List<String> mimeExtEntry = Collections.singletonList("unk");
+        Map<String, List<String>> mimeExtensions = new HashMap<>();
+        mimeExtensions.put("image/jpeg", Arrays.asList("jpg", "jpeg", "jpe"));
+        mimeExtensions.put("image/gif", Collections.singletonList("gif"));
+        mimeExtensions.put("image/png", Collections.singletonList("png"));
+        mimeExtensions.put("image/pipeg", Collections.singletonList("jfif"));
+        mimeExtensions.put("image/svg+xml", Collections.singletonList("svg"));
+        mimeExtensions.put("image/tiff", Arrays.asList("tif", "tiff"));
+        mimeExtensions.put("image/x-rgb", Collections.singletonList("rgb"));
+        mimeExtensions.put("image/x-xbitmap", Collections.singletonList("xbm"));
+        mimeExtensions.put("image/x-xpixmap", Collections.singletonList("xpm"));
+
+        if(StringUtil.isNotNullOrEmpty(mimeType) && mimeExtensions.containsKey(mimeType)) {
+            mimeExtEntry = mimeExtensions.get(mimeType);
+        }
+
+        int p = imageName.lastIndexOf(".");
+        String ext = imageName.substring(p + 1);
+        if (p == -1 || !ext.matches("\\w+")) {
+            // file has no extension; add the default for this mime-type
+            return String.format("%s.%s", imageName, mimeExtEntry.get(0));
+        } else {
+            // file has extension
+            if(mimeExtEntry.contains(ext)){
+                // the filename reflects the mime-type
+                return imageName;
+            } else {
+                // the filename seems to be different from the mime-type; trust the mime-type
+                String filename = imageName.substring(1, p);
+                return String.format("%s.%s", filename, mimeExtEntry.get(0));
+            }
+
         }
     }
 }
