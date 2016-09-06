@@ -36,11 +36,11 @@
           </author>
         </xsl:for-each>
       </authors>
+      <post_site_name>
+        <xsl:value-of select="normalize-space(//item/dc:publisher)"/>
+      </post_site_name>
       <source>
-        <xsl:value-of select="//item/dc:creator"/>
-        <!--<xsl:variable name="site" select="substring-before(substring-after(//item/source/@url, '//'), '/')" />
-        <xsl:variable name="feed" select="concat('http://', $site, '/section?template=RSS')" />
-        <xsl:value-of select="document($feed)/rss/channel/dc:publisher"/>-->
+        <xsl:value-of select="normalize-space(//item/dc:publisher)"/>
       </source>
       <content>
         <xsl:value-of select="content:encoded"/>
@@ -92,7 +92,7 @@
             <xsl:text>source_name</xsl:text>
           </key>
           <value>
-            <xsl:value-of select="normalize-space(dc:creator)"/>
+            <xsl:value-of select="normalize-space(//item/dc:publisher)"/>
           </value>
         </field>
 

@@ -38,6 +38,8 @@ public class WordPressPost implements Serializable {
 
     private String type;
 
+    private String post_site_name;
+
     //link
 
     private String title;
@@ -328,5 +330,13 @@ public class WordPressPost implements Serializable {
 
     public void setSources(ArrayList<Integer> sources) {
         this.sources = sources;
+    }
+
+    public String getPost_site_name() {
+        return post_site_name;
+    }
+
+    public void setPost_site_name(String post_site_name) {
+        this.post_site_name = post_site_name;
     }
 }
