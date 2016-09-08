@@ -31,6 +31,9 @@
       <byline>
         <xsl:value-of select="normalize-space(/atom:entry/atom:content/nitf/body/body.head/byline/text())"/>
       </byline>
+      <post_site_name>
+        <xsl:value-of select="normalize-space(/atom:entry/atom:content/nitf/body/body.head/distributor/text())"/>
+      </post_site_name>
       <source>
         <xsl:value-of select="normalize-space(/atom:entry/atom:content/nitf/body/body.head/distributor/text())"/>
       </source>
