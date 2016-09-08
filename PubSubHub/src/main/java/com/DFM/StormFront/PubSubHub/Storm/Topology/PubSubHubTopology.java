@@ -29,7 +29,7 @@ public class PubSubHubTopology {
         builder.setSpout("PublisherSpout", new PublisherSpout(options.get("publisherKeySearch")), 1).setNumTasks(1);
 
         // Bolt to determine feed type and send to appropriate bolt based on feed class
-        builder.setBolt("FeedLoadBolt", new FeedLoadBolt(), 4).setNumTasks(8).shuffleGrouping("PublisherSpout");
+        builder.setBolt("FeedLoadBolt", new FeedLoadBolt(), 5).setNumTasks(10).shuffleGrouping("PublisherSpout");
 
         // Bolt to process Feed class
         builder.setBolt("FeedReaderBolt", new FeedReaderBolt(), 3).setNumTasks(6).shuffleGrouping("FeedLoadBolt");
@@ -45,7 +45,7 @@ public class PubSubHubTopology {
         builder.setBolt("SubscriberBolt", new SubscriberBolt(), 3).setNumTasks(6).fieldsGrouping("StoryReaderBolt", new Fields("storyGUID"));
 
         // Bolts for subscribers
-        builder.setBolt("WordPressBolt", new WordPressBolt(), 4).setNumTasks(8).fieldsGrouping("SubscriberBolt", "WordPress", new Fields("storyGUID"));
+        builder.setBolt("WordPressBolt", new WordPressBolt(), 5).setNumTasks(10).fieldsGrouping("SubscriberBolt", "WordPress", new Fields("storyGUID"));
         builder.setBolt("NGPSBolt", new NGPSBolt(), 4).setNumTasks(8).fieldsGrouping("SubscriberBolt", "NGPS", new Fields("storyGUID"));
         builder.setBolt("ElasticSearchBolt", new ElasticSearchBolt(), 4).setNumTasks(8).fieldsGrouping("SubscriberBolt", "ElasticSearch", new Fields("storyGUID"));
 
@@ -118,6 +118,8 @@ public class PubSubHubTopology {
         } else {
             logUtil.log("Setting Search: publishers:*", "topology.log");
             conf.put("publisherKeySearch", "publishers:AP:*");
+            //conf.put("publisherKeySearch", "publishers:blogs:www.heyreverb.com");
+            //conf.put("publisherKeySearch", "publishers:AP:AP-Online-National-News");
         }
 
         options.put("publisherKeySearch", conf.get("publisherKeySearch"));
