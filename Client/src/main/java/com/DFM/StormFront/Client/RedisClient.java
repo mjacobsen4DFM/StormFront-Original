@@ -5,6 +5,7 @@ package com.DFM.StormFront.Client;
  */
 
 import com.DFM.StormFront.Util.SerializationUtil;
+import com.DFM.StormFront.Util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -33,7 +34,7 @@ public class RedisClient implements Serializable {
         this.host = host;
         this.port = port;
         this.timeout = timeout;
-        if (!password.equalsIgnoreCase("")) {
+        if (StringUtil.isNotNullOrEmpty(password)) {
             this.password = password;
         }
     }
@@ -43,7 +44,7 @@ public class RedisClient implements Serializable {
         this.host = host;
         this.port = port;
         this.timeout = timeout;
-        if (!password.equalsIgnoreCase("")) {
+        if (StringUtil.isNotNullOrEmpty(password)) {
             this.password = password;
         }
         this.database = database;
@@ -54,12 +55,12 @@ public class RedisClient implements Serializable {
         this.host = resource.getString("redisHost_" + propertyInstance);
         this.port = Integer.parseInt(resource.getString("redisPort_" + propertyInstance));
         this.timeout = Integer.parseInt(resource.getString("redisTimeout_" + propertyInstance));
-        if (!resource.containsKey("redisPassword_" + propertyInstance) || resource.getString("redisPassword_" + propertyInstance).equalsIgnoreCase("")) {
-            this.password = "";
+        if (!resource.containsKey("redisPassword_" + propertyInstance) || StringUtil.isNullOrEmpty(resource.getString("redisPassword_" + propertyInstance))) {
+            this.password = null;
         } else {
             this.password = resource.getString("redisPassword_" + propertyInstance);
         }
-        if (!resource.containsKey("redisDatabase_" + propertyInstance) || resource.getString("redisDatabase_" + propertyInstance).equalsIgnoreCase("")) {
+        if (!resource.containsKey("redisDatabase_" + propertyInstance) || StringUtil.isNullOrEmpty(resource.getString("redisDatabase_" + propertyInstance))) {
             this.database = 0;
         } else {
             this.database = Integer.parseInt(resource.getString("redisDatabase_" + propertyInstance));
@@ -77,10 +78,10 @@ public class RedisClient implements Serializable {
         this.host = (String) conf.get("redisHost");
         this.port = Integer.parseInt((String) conf.get("redisPort"));
         this.timeout = Integer.parseInt((String) conf.get("redisTimeout"));
-        if (!conf.get("redisPassword").toString().equalsIgnoreCase("")) {
+        if (StringUtil.isNotNullOrEmpty((String) conf.get("redisPassword"))) {
             this.password = (String) conf.get("redisPassword");
         }
-        if (!conf.get("redisDatabase").toString().equalsIgnoreCase("")) {
+        if (StringUtil.isNotNullOrEmpty((String) conf.get("redisDatabase"))) {
             this.database = Integer.parseInt((String) conf.get("redisDatabase"));
         }
     }
@@ -332,7 +333,7 @@ public class RedisClient implements Serializable {
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
-            jedis = getJedis(pool);
+            //jedis = getJedis(pool);
         }
         return jedis;
     }

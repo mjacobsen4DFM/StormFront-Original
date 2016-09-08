@@ -29,7 +29,7 @@
     <properties>
         <Appliance.Util.version>0.2.14.0</Appliance.Util.version>
         <Appliance.Model.version>0.4.2.1</Appliance.Model.version>
-        <Appliance.Client.version>0.2.8.1</Appliance.Client.version>
+        <Appliance.Client.version>0.2.8.2</Appliance.Client.version>
         <Appliance.Adapter.version>0.2.5.0</Appliance.Adapter.version>
         <Appliance.Exec.version>0.1.16.3</Appliance.Exec.version>
         <Appliance.PubSubHub.version>0.10.14.2</Appliance.PubSubHub.version>
