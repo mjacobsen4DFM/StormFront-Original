@@ -85,7 +85,7 @@ public class PublisherSpout extends BaseRichSpout {
                 _keys = _redisClient.hgetAll(_pubKey);
                 _keys.put("pubKey", _pubKey);
                 _publisher = new Publisher(_keys);
-                if(_publisher.getActive()) {
+                if(_publisher.getActive() && StringUtil.isNotNullOrEmpty(_publisher.getUrl())) {
                     byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
                     emit(_pubKey, binaryPublisher, _pubKey);
                 }
