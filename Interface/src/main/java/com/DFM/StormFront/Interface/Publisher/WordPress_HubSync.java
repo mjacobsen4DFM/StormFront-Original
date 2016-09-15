@@ -6,7 +6,6 @@ import com.DFM.StormFront.Client.WebClient;
 import com.DFM.StormFront.Interface.Exec.PublisherExec;
 import com.DFM.StormFront.Model.WordPress.HubSync;
 import com.DFM.StormFront.Util.ExceptionUtil;
-import com.DFM.StormFront.Util.FileUtil;
 import com.DFM.StormFront.Util.LogUtil;
 import com.DFM.StormFront.Util.StringUtil;
 
@@ -98,13 +97,13 @@ public class WordPress_HubSync {
 
             String id = hubSync.getPost_id();
             String file_name = hubSync.getRemote_file_name();
-            FileUtil.printFile(FileUtil.getLogDir(), "Hubsync", id + "_raw", file_name.replace(".xml", ""), "txt", rawJSON);
-            FileUtil.printFile(FileUtil.getLogDir(), "Hubsync", id + "_fix", file_name.replace(".xml", ""), "txt", fixJSON);
+           // FileUtil.printFile(FileUtil.getLogDir(), "Hubsync", id + "_raw", file_name.replace(".xml", ""), "txt", rawJSON);
+           // FileUtil.printFile(FileUtil.getLogDir(), "Hubsync", id + "_fix", file_name.replace(".xml", ""), "txt", fixJSON);
 
             return hubSync;
         } catch (Exception e) {
             if (1 == 11) LogUtil.log("BAD JSON:" + rawJSON);
-            FileUtil.printFile(FileUtil.getLogDir(), "Hubsync", "bad", "unknown", "txt", rawJSON);
+            // FileUtil.printFile(FileUtil.getLogDir(), "Hubsync", "bad", "unknown", "txt", rawJSON);
             throw new Exception(ExceptionUtil.getFullStackTrace(e));
         }
     }
