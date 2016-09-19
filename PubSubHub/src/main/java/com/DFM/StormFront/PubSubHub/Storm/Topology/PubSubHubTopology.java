@@ -69,10 +69,10 @@ public class PubSubHubTopology {
         LogUtil logUtil = new LogUtil();
         Config conf = new Config();
         conf.setDebug(false);
-        conf.setNumWorkers(4);
+        conf.setNumWorkers(12);
         conf.setMaxSpoutPending(1000);
-        conf.setMessageTimeoutSecs(900);
-        //conf.setMaxTaskParallelism(4);
+        conf.setMessageTimeoutSecs(120);
+        conf.setMaxTaskParallelism(8);
         RedisClient redisClient = new RedisClient(options.get("loc"));
         conf.put("loc", options.get("loc"));
         conf.put("redisHost", redisClient.getHost());
