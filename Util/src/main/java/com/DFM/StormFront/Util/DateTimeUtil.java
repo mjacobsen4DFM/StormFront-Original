@@ -9,7 +9,7 @@ import java.util.Date;
 public class DateTimeUtil {
 
     public static String MilliSecondsToDateISO8601(long ms){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-ddTHH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         return MilliSecondsToDateFormat(ms, sdf);
     }
 
