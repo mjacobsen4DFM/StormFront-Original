@@ -87,7 +87,7 @@ public class SubscriberBolt extends BaseRichBolt {
 
                 String subscriberType = subscriberMap.get("type");
                 if (2 == 2) {
-                    LogUtil.log("SubscriberBolt->subscriberType: " + subscriberType + ", _storyGUID: " + _storyGUID + " Active: " + subscriberActive);
+                    LogUtil.log("Publisher->source: " + _publisherSource + ", SubscriberBolt->subscriberType: " + subscriberType + ", _storyGUID: " + _storyGUID + " Active: " + subscriberActive);
                 }
                 if (subscriberActive && subscriptionActive) {
                     byte[] binarySubscriberMap = SerializationUtil.serialize(subscriberMap);
