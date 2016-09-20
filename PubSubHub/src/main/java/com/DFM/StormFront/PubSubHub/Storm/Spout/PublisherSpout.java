@@ -8,6 +8,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import com.DFM.StormFront.Client.RedisClient;
 import com.DFM.StormFront.Client.Util.RedisLogUtil;
+import com.DFM.StormFront.Model.Storm.MsgTracker;
 import com.DFM.StormFront.PubSubHub.Storm.Bolt.Workflow.FeedLoadBolt;
 import com.DFM.StormFront.PubSubHub.Util.LinearControl;
 import com.DFM.StormFront.Model.Publisher;
@@ -30,6 +31,8 @@ public class PublisherSpout extends BaseRichSpout {
     private static ArrayList<String> _pubs;
     private static Queue<String> _pubList = new LinkedList<>();
     private static Queue<String> _pubQueue = new LinkedList<>();
+    private static Queue<String> _pubPending = new LinkedList<>();
+    private static Integer _msDelay = 60000;
     private static Integer tupleCount = 0;
 
 
@@ -39,7 +42,7 @@ public class PublisherSpout extends BaseRichSpout {
     private static Values _values;
     private static Map<String, Object> _mainConf;
 
-    public PublisherSpout(String publisherKeySearch){
+    public PublisherSpout(String publisherKeySearch) {
         _logUtil = new LogUtil();
         _logUtil.log("newspout", 4);
         _publisherKeySearch = publisherKeySearch;
@@ -63,7 +66,7 @@ public class PublisherSpout extends BaseRichSpout {
         _logUtil.level = 3; //Integer.parseInt(_redisClient.hget("config:" + _mode, "loglevel"));
         _hostname = SystemUtil.getHostname();
         _publisherKeySearch = (String) conf.get("publisherKeySearch");
-        _logUtil.log("publisherKeySearch: " +  _publisherKeySearch);
+        _logUtil.log(String.format("publisherKeySearch: %s", _publisherKeySearch));
 
         //Get the pubs from Redis
         _pubs = _redisClient.keys(_publisherKeySearch);
@@ -78,16 +81,24 @@ public class PublisherSpout extends BaseRichSpout {
 
     private static void run() throws Exception {
         _logUtil.log("run", 4);
-        _pubKey = _pubQueue.poll();
+        String pubQueued = _pubQueue.poll();
+
         try {
-            if(StringUtil.isNotNullOrEmpty(_pubKey)) {
-                _logUtil.log("PublisherSpout-> START msgId = " + _pubKey, 2);
-                _keys = _redisClient.hgetAll(_pubKey);
-                _keys.put("pubKey", _pubKey);
-                _publisher = new Publisher(_keys);
-                if(_publisher.getActive() && StringUtil.isNotNullOrEmpty(_publisher.getUrl())) {
-                    byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
-                    emit(_pubKey, binaryPublisher, _pubKey);
+            if (StringUtil.isNotNullOrEmpty(pubQueued)) {
+                MsgTracker msgTracker = new MsgTracker(pubQueued);
+                if(msgTracker.Ready()) {
+                    _pubKey = msgTracker.key;
+                    _logUtil.log(String.format("PublisherSpout-> START pubKey = %s", _pubKey), 2);
+                    _keys = _redisClient.hgetAll(_pubKey);
+                    _keys.put("pubKey", _pubKey);
+                    _publisher = new Publisher(_keys);
+                    if (_publisher.getActive() && _pubList.contains(_pubKey) && StringUtil.isNotNullOrEmpty(_publisher.getUrl())) {
+                        _pubPending.add(msgTracker.toString());
+                        byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
+                        emit(_pubKey, binaryPublisher, msgTracker.toString());
+                    }
+                } else {
+                    _pubQueue.add(msgTracker.toString());
                 }
             }
         } catch (Exception e) {
@@ -118,19 +129,35 @@ public class PublisherSpout extends BaseRichSpout {
         nextTuple();
     }
 
-    public void reloadPubs(){
-        Queue<String> pubList = new LinkedList<>();
+    public void loadNewPubs() {
         //Get the pubs from Redis
+        Queue<String> tstPubList = new LinkedList<>();
         ArrayList<String> pubs = _redisClient.keys(_publisherKeySearch);
-        pubList.addAll(pubs);
+        tstPubList.addAll(pubs);
         String pubkey;
 
-        while ((pubkey = pubList.poll()) != null) {
-            if(! _pubList.contains(pubkey)){
+        Queue<String> newPubList = new LinkedList<>(tstPubList);
+        Queue<String> oldPubList = new LinkedList<>(_pubList);
+
+        //Add pubs
+        while ((pubkey = newPubList.poll()) != null) {
+            if (!oldPubList.contains(pubkey)) {
                 //Add any new pubs to the list & queue
-                _logUtil.log("Publist changed! Adding: " + pubkey, 1);
+                _logUtil.log(String.format("PubList changed! Adding: %s", pubkey), 1);
                 _pubList.add(pubkey);
                 _pubQueue.add(pubkey);
+            }
+        }
+
+         newPubList = new LinkedList<>(tstPubList);
+         oldPubList = new LinkedList<>(_pubList);
+
+        //Remove pubs
+        while ((pubkey = oldPubList.poll()) != null) {
+            if (!newPubList.contains(pubkey)) {
+                //Remove any pubs no longer in the _publisherKeySearch results
+                _logUtil.log(String.format("PubList changed! Removing: %s", pubkey), 1);
+                _pubList.remove(pubkey);
             }
         }
     }
@@ -139,14 +166,14 @@ public class PublisherSpout extends BaseRichSpout {
     public void nextTuple() {
         _logUtil.log("tuple", 4);
         try {
-            run();
-            //	check();
             tupleCount += 1;
-            if(1000 == tupleCount){
-                _logUtil.log("Tuples: " + tupleCount, 3);
-                reloadPubs();
+            if (1000 == tupleCount) {
+                _logUtil.log(String.format("PubList: %s,PubQueue: %s, PubPending: %s", _pubList.size(), _pubQueue.size(), _pubPending.size()), 3);
+                loadNewPubs();
                 tupleCount = 0;
             }
+            run();
+            //	check();
         } catch (Exception e) {
             fail(_pubKey);
         }
@@ -168,9 +195,10 @@ public class PublisherSpout extends BaseRichSpout {
                 i += 1;
                 pubKey = DeliveryIterator.next();
                 msgId = pubKey + ":" + _hostname + ":" + System.nanoTime();
-                _logUtil.log("PublisherSpout->Spout START for msgId" + msgId, 1);
+                _logUtil.log(String.format("PublisherSpout->Spout START for msgId: %s", msgId), 1);
                 delMap = _redisClient.hgetAll(pubKey);
-                _logUtil.log(i + " - id: " + delMap.get("id") + " pubkey: " + pubKey + " title: " + delMap.get("title"), 1);
+
+                _logUtil.log(String.format("%s - id: %s, pubkey: %s, title: %s", i, delMap.get("id"), pubKey, delMap.get("title")), 1);
                 fullMap.put(Integer.toString(i), delMap.get("id") + ", pubkey: " + pubKey + " title:" + delMap.get("title"));
             }
             Map<String, String> sortMap = sortHashMapByValuesD((HashMap) fullMap);
@@ -190,7 +218,7 @@ public class PublisherSpout extends BaseRichSpout {
             Map.Entry entry = (Map.Entry) it.next();
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
-            _logUtil.log(key + " => " + value, 4);
+            _logUtil.log(String.format("%s => %s", key, value), 4);
             if (value.substring(0, 5).equalsIgnoreCase(prev)) {
                 flag = "****\r\n";
             } else {
@@ -230,16 +258,32 @@ public class PublisherSpout extends BaseRichSpout {
     }
 
     @Override
-    public void ack(Object pubKey) {
-        _logUtil.log("PublisherSpout-> ACK msgId = " + pubKey.toString(), 1);
-        _pubQueue.add((String) pubKey);
+    public void ack(Object msgId) {
+        doAckFail(msgId, "ACK");
     }
 
     @Override
-    public void fail(Object pubKey) {
-        //RedisLogUtil.logFail("PublisherSpout-> FAIL msgId = " + pubKey.toString(), _redisClient);
-        _logUtil.log("PublisherSpout-> FAIL msgId = " + pubKey.toString(), 1);
-        _pubQueue.add((String) pubKey);
+    public void fail(Object msgId) {
+        doAckFail(msgId, "FAIL");
+    }
+
+    private void doAckFail(Object msgId, String msg){
+        MsgTracker msgTracker = new MsgTracker((String)msgId);
+        _pubPending.remove(msgTracker.toString());
+
+        String pubKey = msgTracker.key;
+        //String timeStr = DateTimeUtil.MilliSecondsToDateISO8601(msgTracker.msStart);
+        long timeStr = System.currentTimeMillis() - msgTracker.msStart;
+
+        _logUtil.log(String.format("PublisherSpout-> %s pubKey = %s, took %s seconds", msg, pubKey, timeStr/1000.000), 1);
+
+        if(msgTracker.TooFast(_msDelay)){
+            _logUtil.log(String.format("PublisherSpout-> DELAY pubKey = %s for %s seconds", pubKey, _msDelay / 1000), 1);
+            msgTracker.msStart = System.currentTimeMillis() + _msDelay;
+        } else {
+            msgTracker.msStart = System.currentTimeMillis();
+        }
+        _pubQueue.add(msgTracker.toString());
     }
 
     @Override
