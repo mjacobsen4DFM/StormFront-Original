@@ -28,7 +28,7 @@ public class MsgTracker {
     }
 
     public boolean TooFast(Integer msDelay){
-        return System.currentTimeMillis() - this.msStart > msDelay;
+        return System.currentTimeMillis() - this.msStart < msDelay;
     }
 
     @Override
