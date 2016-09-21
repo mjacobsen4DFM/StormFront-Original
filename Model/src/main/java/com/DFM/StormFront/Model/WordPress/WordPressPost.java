@@ -84,6 +84,8 @@ public class WordPressPost implements Serializable {
 
     private String source;
 
+    private String permalink;
+
     private String slug;
 
     public WordPressPost() {
@@ -338,5 +340,13 @@ public class WordPressPost implements Serializable {
 
     public void setPost_site_name(String post_site_name) {
         this.post_site_name = post_site_name;
+    }
+
+    public String getPermalink() {
+        return permalink;
+    }
+
+    public void setPermalink(String permalink) {
+        this.permalink = permalink;
     }
 }
