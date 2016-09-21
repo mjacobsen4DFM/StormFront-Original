@@ -10,8 +10,7 @@
         xmlns:georss="http://www.georss.org/georss"
         xmlns:dcterms="http://purl.org/dc/terms/"
 >
-  <!-- <xsl:include href="http://delivery.digitalfirstmedia.com/WebServices/ConversionPublisher/BaseFiles/MainFunctions.xslt"/> -->
-  <xsl:include href="C:\Users\Mick\Documents\Cloud\Google Drive\mjacobsen@denverpost.com\Dev\Projects\TRFEEDS\Webservices\ConversionPublisher\Basefiles\MainFunctions.xslt"/>
+  <xsl:include href="http://delivery.digitalfirstmedia.com/WebServices/ConversionPublisher/BaseFiles/MainFunctions.xslt"/>
   <xsl:output method="xml" indent="yes"/>
 
   <xsl:template match="@* | node()">
@@ -42,6 +41,9 @@
       <source>
         <xsl:value-of select="normalize-space(//item/dc:publisher)"/>
       </source>
+      <permalink>
+        <xsl:value-of select="normalize-space(//item/link)"/>
+      </permalink>
       <content>
         <xsl:value-of select="content:encoded"/>
       </content>
