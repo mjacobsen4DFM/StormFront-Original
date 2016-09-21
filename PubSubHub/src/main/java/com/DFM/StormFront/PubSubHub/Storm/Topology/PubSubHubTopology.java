@@ -68,11 +68,8 @@ public class PubSubHubTopology {
     private static void storm(Map<String, String> options ) throws AlreadyAliveException, InvalidTopologyException {
         LogUtil logUtil = new LogUtil();
         Config conf = new Config();
-        conf.setDebug(false);
-        conf.setNumWorkers(12);
-        conf.setMaxSpoutPending(1000);
-        conf.setMessageTimeoutSecs(660);
-        conf.setMaxTaskParallelism(8);
+        conf.setNumWorkers(32);
+        conf.setMessageTimeoutSecs(420);
         RedisClient redisClient = new RedisClient(options.get("loc"));
         conf.put("loc", options.get("loc"));
         conf.put("redisHost", redisClient.getHost());
