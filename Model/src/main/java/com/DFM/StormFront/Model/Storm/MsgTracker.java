@@ -6,6 +6,9 @@ package com.DFM.StormFront.Model.Storm;
 public class MsgTracker {
     public String key = "";
     public long msStart = 0;
+    public long msDelay = 0;
+    protected long completion = 0;
+    protected long duration = 0;
     public String delim = "~";
 
     public MsgTracker(String key) {
@@ -23,12 +26,39 @@ public class MsgTracker {
         this.msStart = Long.parseLong(msgArray[1]);
     }
 
+    public void NewStart(){
+         this.NewStart(System.currentTimeMillis());
+    }
+
+    public void NewStart(long ms){
+        this.msStart = ms;
+    }
+
     public boolean Ready(){
-        return msStart < System.currentTimeMillis();
+        return msStart < this.getCompletion();
     }
 
     public boolean TooFast(Integer msDelay){
-        return System.currentTimeMillis() - this.msStart < msDelay;
+        boolean bTooFast = this.getDuration() < msDelay;
+        if( bTooFast ){
+            this.msDelay = msDelay - this.getDuration();
+            this.NewStart(this.getCompletion() + this.msDelay);
+        }
+        return bTooFast;
+    }
+
+    public long getCompletion(){
+        if ( this.completion == 0 ){
+            this.completion = System.currentTimeMillis();
+        }
+        return this.duration;
+    }
+
+    public long getDuration(){
+        if ( this.duration == 0 ){
+            this.duration = this.getCompletion() - this.msStart;
+        }
+        return this.duration;
     }
 
     @Override
