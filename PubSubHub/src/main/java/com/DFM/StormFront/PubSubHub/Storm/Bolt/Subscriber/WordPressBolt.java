@@ -120,7 +120,7 @@ public class WordPressBolt extends BaseRichBolt {
             }
 
         } catch (Exception e) {
-            String errMsg = "Operation: " + wp.operation + ", " + ExceptionUtil.getFullStackTrace(e) + ", into: " + wp.postLocation + ", code: " + resultMap.get("code");
+            String errMsg = String.format("Operation: %s, for Publisher: %s to Subscriber: %s; error: %s, into: %s, code: %s", wp.operation, _publisher.getPubKey(), _subscriberFeed, ExceptionUtil.getFullStackTrace(e), wp.postLocation, resultMap.get("code"));
             String wpMsg;
             if (resultMap.get("result") != null) {
                 if (resultMap.get("result").startsWith("[")) {
