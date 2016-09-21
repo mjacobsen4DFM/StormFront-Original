@@ -93,7 +93,6 @@ public class PublisherSpout extends BaseRichSpout {
                 MsgTracker msgTracker = new MsgTracker(pubQueued);
                 if(msgTracker.Ready()) {
                     _pubKey = msgTracker.key;
-                    _logUtil.log(String.format("PublisherSpout-> START pubKey = %s", _pubKey), 2);
                     _keys = _redisClient.hgetAll(_pubKey);
                     _keys.put("pubKey", _pubKey);
                     _publisher = new Publisher(_keys);
@@ -104,7 +103,11 @@ public class PublisherSpout extends BaseRichSpout {
                         _pubPending.add(msgTracker.toString());
                         _logUtil.log(String.format("Track %s->PubFeeds: %s, PubQueue: %s, PubPending: %s", _operation, _pubFeeds.size(), _pubQueue.size(), _pubPending.size()), 3);
                         byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
+                        _logUtil.log(String.format("PublisherSpout-> START pubKey = %s", _pubKey), 2);
+                        msgTracker.NewStart();
                         emit(_pubKey, binaryPublisher, msgTracker.toString());
+                    } else {
+                        _logUtil.log(String.format("PublisherSpout-> SKIP pubKey = %s", _pubKey), 2);
                     }
                 } else {
                     _pubQueue.add(msgTracker.toString());
@@ -284,14 +287,11 @@ public class PublisherSpout extends BaseRichSpout {
         _pubPending.remove(msgTracker.toString());
 
         String pubKey = msgTracker.key;
-        //String timeStr = DateTimeUtil.MilliSecondsToDateISO8601(msgTracker.msStart);
-        long timeStr = System.currentTimeMillis() - msgTracker.msStart;
 
-        _logUtil.log(String.format("PublisherSpout-> %s pubKey = %s, took %s seconds", msg, pubKey, timeStr/1000.000), 1);
+        _logUtil.log(String.format("PublisherSpout-> %s pubKey = %s, took %s seconds", msg, pubKey, msgTracker.getDuration()/1000.000), 1);
 
         if(msgTracker.TooFast(_msDelay)){
-            _logUtil.log(String.format("PublisherSpout-> DELAY pubKey = %s for %s seconds", pubKey, _msDelay / 1000), 1);
-            msgTracker.msStart = System.currentTimeMillis() + _msDelay;
+            _logUtil.log(String.format("PublisherSpout-> DELAY pubKey = %s for %s seconds", pubKey, msgTracker.msDelay/1000.000), 1);
         } else {
             msgTracker.msStart = System.currentTimeMillis();
         }
