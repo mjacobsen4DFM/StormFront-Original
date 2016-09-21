@@ -20,6 +20,7 @@ import java.util.*;
 public class PublisherSpout extends BaseRichSpout {
     private static final long serialVersionUID = 1L;
     private static String _mode = "unknown";
+    private static String _operation = "init";
 
     private static SpoutOutputCollector _spoutOutputCollector;
     private static String _publisherKeySearch = "";
@@ -32,6 +33,7 @@ public class PublisherSpout extends BaseRichSpout {
     private static Queue<String> _pubList = new LinkedList<>();
     private static Queue<String> _pubQueue = new LinkedList<>();
     private static Queue<String> _pubPending = new LinkedList<>();
+    private static Queue<String> _pubFeeds = new LinkedList<>();
     private static Integer _msDelay = 60000;
     private static Integer tupleCount = 0;
 
@@ -44,14 +46,16 @@ public class PublisherSpout extends BaseRichSpout {
 
     public PublisherSpout(String publisherKeySearch) {
         _logUtil = new LogUtil();
-        _logUtil.log("newspout", 4);
+        _operation = "NEW_SPOUT";
+        _logUtil.log(_operation, 4);
         _publisherKeySearch = publisherKeySearch;
     }
 
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector spoutOutputCollector) {
         _logUtil = new LogUtil();
-        _logUtil.log("open", 4);
+        _operation = "OPEN";
+        _logUtil.log(_operation, 4);
         // Open the spout
         _mode = "storm";
         configure(conf);
@@ -80,7 +84,8 @@ public class PublisherSpout extends BaseRichSpout {
     }
 
     private static void run() throws Exception {
-        _logUtil.log("run", 4);
+        _operation = "RUN";
+        _logUtil.log(_operation, 4);
         String pubQueued = _pubQueue.poll();
 
         try {
@@ -93,7 +98,11 @@ public class PublisherSpout extends BaseRichSpout {
                     _keys.put("pubKey", _pubKey);
                     _publisher = new Publisher(_keys);
                     if (_publisher.getActive() && _pubList.contains(_pubKey) && StringUtil.isNotNullOrEmpty(_publisher.getUrl())) {
+                        if(!_pubFeeds.contains(_pubKey)) {
+                            _pubFeeds.add(_pubKey);
+                        }
                         _pubPending.add(msgTracker.toString());
+                        _logUtil.log(String.format("Track %s->PubFeeds: %s, PubQueue: %s, PubPending: %s", _operation, _pubFeeds.size(), _pubQueue.size(), _pubPending.size()), 3);
                         byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
                         emit(_pubKey, binaryPublisher, msgTracker.toString());
                     }
@@ -108,7 +117,8 @@ public class PublisherSpout extends BaseRichSpout {
     }
 
     private static void emit(String pubKey, byte[] binaryPublisher, String pubId) throws Exception {
-        _logUtil.log("emit", 4);
+        _operation = "EMIT";
+        _logUtil.log(_operation, 4);
         _values = new Values(pubKey, binaryPublisher);
         if (_mode.equalsIgnoreCase("linear")) {
             Map<String, Object> outConf = LinearControl.buildConf(_fields, _values);
@@ -122,7 +132,8 @@ public class PublisherSpout extends BaseRichSpout {
 
     public void linear(Map conf) {
         _logUtil = new LogUtil();
-        _logUtil.log("linear", 4);
+        _operation = "LINEAR";
+        _logUtil.log(_operation, 4);
         _mode = "linear";
         configure(conf);
         _logUtil.level = Integer.parseInt(_redisClient.hget("config:storm", "loglevel"));
@@ -164,11 +175,12 @@ public class PublisherSpout extends BaseRichSpout {
 
     @Override
     public void nextTuple() {
-        _logUtil.log("tuple", 4);
+        _operation = "TUPLE";
+        _logUtil.log(_operation, 4);
         try {
             tupleCount += 1;
             if (1000 == tupleCount) {
-                _logUtil.log(String.format("PubList: %s,PubQueue: %s, PubPending: %s", _pubList.size(), _pubQueue.size(), _pubPending.size()), 3);
+                //_logUtil.log(String.format("PubFeeds: %s, PubQueue: %s, PubPending: %s", _pubFeeds.size(), _pubQueue.size(), _pubPending.size()), 3);
                 loadNewPubs();
                 tupleCount = 0;
             }
@@ -284,6 +296,7 @@ public class PublisherSpout extends BaseRichSpout {
             msgTracker.msStart = System.currentTimeMillis();
         }
         _pubQueue.add(msgTracker.toString());
+        _logUtil.log(String.format("Track %s->PubFeeds: %s, PubQueue: %s, PubPending: %s", msg, _pubFeeds.size(), _pubQueue.size(), _pubPending.size()), 3);
     }
 
     @Override
