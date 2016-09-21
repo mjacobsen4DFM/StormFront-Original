@@ -35,7 +35,7 @@ public class MsgTracker {
     }
 
     public boolean Ready(){
-        return msStart < this.getCompletion();
+        return msStart < System.currentTimeMillis();
     }
 
     public boolean TooFast(Integer msDelay){
