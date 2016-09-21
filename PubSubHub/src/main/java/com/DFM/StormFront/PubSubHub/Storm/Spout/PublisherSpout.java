@@ -104,7 +104,6 @@ public class PublisherSpout extends BaseRichSpout {
                         _logUtil.log(String.format("Track %s->PubFeeds: %s, PubQueue: %s, PubPending: %s", _operation, _pubFeeds.size(), _pubQueue.size(), _pubPending.size()), 3);
                         byte[] binaryPublisher = SerializationUtil.serialize(_publisher);
                         _logUtil.log(String.format("PublisherSpout-> START pubKey = %s", _pubKey), 2);
-                        msgTracker.NewStart();
                         emit(_pubKey, binaryPublisher, msgTracker.toString());
                     } else {
                         _logUtil.log(String.format("PublisherSpout-> SKIP pubKey = %s", _pubKey), 2);
@@ -292,9 +291,8 @@ public class PublisherSpout extends BaseRichSpout {
 
         if(msgTracker.TooFast(_msDelay)){
             _logUtil.log(String.format("PublisherSpout-> DELAY pubKey = %s for %s seconds", pubKey, msgTracker.msDelay/1000.000), 1);
-        } else {
-            msgTracker.msStart = System.currentTimeMillis();
         }
+
         _pubQueue.add(msgTracker.toString());
         _logUtil.log(String.format("Track %s->PubFeeds: %s, PubQueue: %s, PubPending: %s", msg, _pubFeeds.size(), _pubQueue.size(), _pubPending.size()), 3);
     }
