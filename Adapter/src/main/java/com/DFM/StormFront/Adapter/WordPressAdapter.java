@@ -65,7 +65,7 @@ public class WordPressAdapter {
 
     public static Map<String, String> postJson(String json, String postBaseEndpoint, WordPressClient wpc) throws Exception {
         Map<String, String> resultMap = new HashMap<>();
-        ;
+
         String postLocation = postBaseEndpoint;
         String wpPostId = "";
 
