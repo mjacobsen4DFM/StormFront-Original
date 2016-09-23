@@ -3,6 +3,7 @@ package com.DFM.StormFront.Client;
 import com.DFM.StormFront.Model.Publisher;
 import com.DFM.StormFront.Util.ExceptionUtil;
 import com.DFM.StormFront.Util.LogUtil;
+import com.DFM.StormFront.Util.StringUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -122,16 +123,19 @@ public class WebClient {
         HttpResponse response = null;
         String body = "";
         try {
-            String credentials = this.username + ":" + this.password;
-            String credentials64 = Base64.encodeBase64URLSafeString(credentials.getBytes());
-            while ((credentials64.length() % 4) > 0) {
-                credentials64 += "=";
-            }
-            String authorizationString = "Basic " + credentials64;
 
             HttpClient client = HttpClientBuilder.create().build();
             HttpGet request = new HttpGet(this.url);
-            request.setHeader("Authorization", authorizationString);
+
+            if(StringUtil.isNotNullOrEmpty(this.username) && StringUtil.isNotNullOrEmpty(this.password)) {
+                String credentials = this.username + ":" + this.password;
+                String credentials64 = Base64.encodeBase64URLSafeString(credentials.getBytes());
+                while ((credentials64.length() % 4) > 0) {
+                    credentials64 += "=";
+                }
+                String authorizationString = "Basic " + credentials64;
+                request.setHeader("Authorization", authorizationString);
+            }
 
             response = client.execute(request);
 
