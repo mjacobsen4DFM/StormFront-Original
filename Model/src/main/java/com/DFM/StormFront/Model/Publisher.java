@@ -28,8 +28,8 @@ public class Publisher implements Serializable {
     private String username;
     private String oauthkey;
     private String password;
-    private Boolean active;
-
+    private Boolean feedActive;
+    private Boolean publisherActive;
 
 
     public Publisher() {
@@ -58,7 +58,8 @@ public class Publisher implements Serializable {
         this.sourceType = keys.get("sourceType");
         this.phaseType = keys.get("phaseType");
         this.updateCheckType = keys.get("updateCheckType");
-        this.setActive((keys.get("active")));
+        this.setFeedActive((keys.get("feedActive")));
+        this.setPublisherActive((keys.get("publisherActive")));
     }
 
     public Publisher(byte[] serializedFeed) throws Exception {
@@ -85,7 +86,8 @@ public class Publisher implements Serializable {
         this.sourceType = feed.getSourceType();
         this.phaseType = feed.getPhaseType();
         this.updateCheckType = feed.getUpdateCheckType();
-        this.active = feed.getActive();
+        this.feedActive = feed.getFeedActive();
+        this.publisherActive = feed.getPublisherActive();
     }
 
     public Integer getPubid() {
@@ -224,21 +226,35 @@ public class Publisher implements Serializable {
         this.updateCheckType = updateCheckType;
     }
 
-    public Boolean getActive() {
-        return active;
+    public Boolean getFeedActive() {
+        return feedActive;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public void setActive(String active) {
-        if(StringUtil.isNotNullOrEmpty(active)) {
-            active = active.trim();
-            this.active = StringUtil.toBoolean(active);
+    public void setFeedActive(String feedActive) {
+        if(StringUtil.isNotNullOrEmpty(feedActive)) {
+            feedActive = feedActive.trim();
+            this.feedActive = StringUtil.toBoolean(feedActive);
         } else {
-            //Assume active for publishers without hte key
-            this.active = true;
+            //Assume active for publishers without the key
+            this.feedActive = true;
         }
+    }
+
+    public Boolean getPublisherActive() {
+        return publisherActive;
+    }
+
+    public void setPublisherActive(String publisherActive) {
+        if(StringUtil.isNotNullOrEmpty(publisherActive)) {
+            publisherActive = publisherActive.trim();
+            this.publisherActive = StringUtil.toBoolean(publisherActive);
+        } else {
+            //Assume active for publishers without the key
+            this.publisherActive = true;
+        }
+    }
+
+    public boolean getActive(){
+        return this.feedActive && this.publisherActive;
     }
 }
