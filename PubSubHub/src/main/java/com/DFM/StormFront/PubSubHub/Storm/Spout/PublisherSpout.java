@@ -96,6 +96,9 @@ public class PublisherSpout extends BaseRichSpout {
                     _pubKey = msgTracker.key;
                     _keys = _redisClient.hgetAll(_pubKey);
                     _keys.put("pubKey", _pubKey);
+                    _keys.put("feedActive", _keys.get("active"));
+                    _keys.putAll(_redisClient.hgetAll(String.format("%s:Properties", _pubKey)));
+                    _keys.put("publisherActive", _keys.get("active"));
                     _publisher = new Publisher(_keys);
 
                     if (_publisher.getActive() && _pubList.contains(_pubKey) && StringUtil.isNotNullOrEmpty(_publisher.getUrl())) {
