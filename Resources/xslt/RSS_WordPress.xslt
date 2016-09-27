@@ -18,15 +18,17 @@
       <guid>
         <xsl:variable name="guid" select="//item/guid"/>
         <xsl:choose>
-          <xsl:when test="contains(guid, 'http://')">
+          <xsl:when test="contains($guid, 'http://')">
             <xsl:value-of select="translate(substring-after($guid, 'http://'), '/', ':')"/>
           </xsl:when>
-          <xsl:when test="contains(guid, 'https://')">
+          <xsl:when test="contains($guid, 'https://')">
             <xsl:value-of select="translate(substring-after($guid, 'https://'), '/', ':')"/>
           </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="$guid"/>
+          </xsl:otherwise>
         </xsl:choose>
       </guid>
-      <!--<date>2016-09-25T23:34:46+00:00</date>-->
       <date>
         <xsl:call-template name="formatDateLong">
           <xsl:with-param name="date" select="normalize-space(//item/pubDate)" />
@@ -99,4 +101,3 @@
     </wp-api>
   </xsl:template>
 </xsl:stylesheet>
-

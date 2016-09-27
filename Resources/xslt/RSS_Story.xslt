@@ -10,25 +10,25 @@
       <guid>
         <xsl:variable name="guid" select="//item/guid"/>
         <xsl:choose>
-          <xsl:when test="contains(guid, 'http://')">
+          <xsl:when test="contains($guid, 'http://')">
             <xsl:value-of select="translate(substring-after($guid, 'http://'), '/', ':')"/>
           </xsl:when>
-          <xsl:when test="contains(guid, 'https://')">
+          <xsl:when test="contains($guid, 'https://')">
             <xsl:value-of select="translate(substring-after($guid, 'https://'), '/', ':')"/>
           </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="$guid"/>
+          </xsl:otherwise>
         </xsl:choose>
       </guid>
       <title>
         <xsl:value-of select="title"/>
       </title>
-      <updateCheck>
-        <xsl:value-of select="normalize-space(//item/updateDate)"/>
-      </updateCheck>
       <viewURI>
         <xsl:value-of select="//item/source/@url"/>
       </viewURI>
       <subjects>
-        <xsl:for-each select="//item/category">
+        <xsl:for-each select="//category">
           <subject>
             <xsl:value-of select="."/>
           </subject>
