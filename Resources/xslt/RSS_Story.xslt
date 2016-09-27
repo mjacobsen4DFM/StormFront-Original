@@ -8,7 +8,15 @@
   <xsl:template match="@* | node()">
     <wp-api>
       <guid>
-        <xsl:value-of select="guid"/>
+        <xsl:variable name="guid" select="//item/guid"/>
+        <xsl:choose>
+          <xsl:when test="contains(guid, 'http://')">
+            <xsl:value-of select="translate(substring-after($guid, 'http://'), '/', ':')"/>
+          </xsl:when>
+          <xsl:when test="contains(guid, 'https://')">
+            <xsl:value-of select="translate(substring-after($guid, 'https://'), '/', ':')"/>
+          </xsl:when>
+        </xsl:choose>
       </guid>
       <title>
         <xsl:value-of select="title"/>
