@@ -2,6 +2,8 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:atom="http://www.w3.org/2005/Atom"
+                exclude-result-prefixes="dc atom"
+               
 >
   <xsl:output method="xml" indent="yes"/>
 
@@ -25,7 +27,7 @@
         <xsl:value-of select="title"/>
       </title>
       <viewURI>
-        <xsl:value-of select="//item/source/@url"/>
+        <xsl:value-of select="//item/link"/>
       </viewURI>
       <subjects>
         <xsl:for-each select="//category">
