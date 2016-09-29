@@ -97,7 +97,7 @@ public class PublisherSpout extends BaseRichSpout {
                     _keys = _redisClient.hgetAll(_pubKey);
                     _keys.put("pubKey", _pubKey);
                     _keys.put("feedActive", _keys.get("active"));
-                    _keys.putAll(_redisClient.hgetAll(String.format("%s:Properties", _pubKey)));
+                    _keys.putAll(_redisClient.hgetAll(String.format("publishers:%s:Properties", _keys.get("source"))));
                     _keys.put("publisherActive", _keys.get("active"));
                     _publisher = new Publisher(_keys);
 
@@ -147,7 +147,9 @@ public class PublisherSpout extends BaseRichSpout {
         _mode = "linear";
         configure(conf);
         _logUtil.level = Integer.parseInt(_redisClient.hget("config:storm", "loglevel"));
-        nextTuple();
+        for (int i = 0; i <= _pubQueue.size(); i++) {
+            nextTuple();
+        }
     }
 
     public void loadNewPubs() {

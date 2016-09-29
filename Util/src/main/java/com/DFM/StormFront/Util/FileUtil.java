@@ -85,9 +85,12 @@ public class FileUtil {
             if(mimeExtEntry.contains(ext)){
                 // the filename reflects the mime-type
                 return imageName;
-            } else {
+            } else if(mimeExtEntry.contains(ext.toLowerCase())){
+                // the filename reflects the mime-type
+                return imageName;
+            } else{
                 // the filename seems to be different from the mime-type; trust the mime-type
-                String filename = imageName.substring(1, p);
+                String filename = imageName.substring(0, p);
                 return String.format("%s.%s", filename, mimeExtEntry.get(0));
             }
 

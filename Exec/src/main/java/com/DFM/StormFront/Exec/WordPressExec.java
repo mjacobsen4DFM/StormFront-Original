@@ -160,12 +160,10 @@ public class WordPressExec {
             resultMap = this.postStory(_wpp, storyDataMap, postLocation);
 
             try {
-                if ((Boolean) storyDataMap.get("isNew")) {
-                    operation = "Post() Gather Post Data";
-                    wpPostId = resultMap.get("wpPostId");
-                    _wpp.setID(wpPostId);
-                    postLocation = resultMap.get("postLocation");
-                }
+                operation = "Post() Gather Post Data";
+                wpPostId = resultMap.get("wpPostId");
+                _wpp.setID(wpPostId);
+                postLocation = resultMap.get("postLocation");
 
                 if ((postLocation == null || postLocation.equals("")) && (wpPostId == null || wpPostId.equals(""))) {
                     //WTF?!
@@ -175,6 +173,9 @@ public class WordPressExec {
                 }
 
                 LogUtil.log("postStory info: " + _subscriberMap.get("name") + " for: \"" + storyTitle + "\" at: " + postLocation);
+
+                operation = "Post() CoAuthor";
+                this.postCoAuthor(coauthorsBaseEndpoint, wpPostId);
 
                 operation = "Post() Post Images";
                 this.postImages(wpPostId, postLocation, authorId, _wpp, mediaBaseEndpoint, coauthorsBaseEndpoint);
@@ -186,9 +187,6 @@ public class WordPressExec {
                     operation = "Post() Post StoryMeta";
                     Map<String, Map<String, String>> storyMeta = this.getStoryMeta(wppXML);
                     this.postStoryMeta(postLocation, storyMeta);
-
-                    operation = "Post() CoAuthor";
-                    this.postCoAuthor(coauthorsBaseEndpoint, wpPostId);
                 }
             } catch (Exception e) {
                 String msg = String.format("%s Error: from %s", operation, postLocation);
@@ -274,7 +272,7 @@ public class WordPressExec {
                     key = XmlUtil.getFirstValue(element, "key");
                     value = XmlUtil.getFirstValue(element, "value");
                     Map<String, String> metaField = new HashMap<>();
-                    if(StringUtil.isNotNullOrEmpty(value)) {
+                    if (StringUtil.isNotNullOrEmpty(value)) {
                         metaField.put(key, value);
                         storyMeta.put(String.format("%s%s", element.getTagName(), Integer.toString(i)), metaField);
                     }

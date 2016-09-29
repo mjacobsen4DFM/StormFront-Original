@@ -47,7 +47,7 @@ public class StringUtil {
 	}
 
 	public static boolean isNullOrEmpty(String str){
-		return StringUtils.isEmpty(str) || StringUtils.isBlank(str);
+		return StringUtils.isEmpty(str) || StringUtils.isBlank(str) || str.equals("null");
 	}
 
 	public static boolean isNotNullOrEmpty(String str){

@@ -72,13 +72,23 @@ public class WordPressAdapter {
         try {
             resultMap = wpc.post(postLocation, json);
 
+
             if (WebClient.isBad(Integer.parseInt(resultMap.get("code").trim()))) {
                 resultMap = wpc.post(postLocation, json);
             }
 
             if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
-                wpPostId = JsonUtil.getValue(resultMap.get("result"), "id");
-                postLocation = resultMap.get("location");
+                String jsonResult = resultMap.get("result");
+                jsonResult = jsonResult.replace("{\"status\":\"ok\"}", "").trim();
+                wpPostId = JsonUtil.getValue(jsonResult, "id");
+                if(! postBaseEndpoint.contains(wpPostId)) {
+                    if (postLocation.equalsIgnoreCase(postBaseEndpoint)) {
+                        postLocation = resultMap.get("location");
+                    }
+                    if (StringUtil.isNullOrEmpty(postLocation)) {
+                        postLocation = String.format("%s%s", postBaseEndpoint, wpPostId);
+                    }
+                }
             } else {
                 String errMsg = "Fatal post error for " + postLocation + " Code: " + resultMap.get("code") + " Response: " + resultMap.get("result") + " JSON: " + JsonUtil.toJSON(json);
                 throw new Exception(errMsg);
@@ -105,8 +115,15 @@ public class WordPressAdapter {
             }
 
             if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
-                wpPostId = JsonUtil.getValue(resultMap.get("result"), "id");
-                postLocation = resultMap.get("location");
+                String jsonResult = resultMap.get("result");
+                jsonResult = jsonResult.replace("{\"status\":\"ok\"}", "").trim();
+                wpPostId = JsonUtil.getValue(jsonResult, "id");
+                if(postLocation == postBaseEndpoint) {
+                    postLocation = resultMap.get("location");
+                }
+                if(StringUtil.isNullOrEmpty(postLocation)) {
+                    postLocation = String.format("%s%s", postBaseEndpoint, wpPostId);
+                }
             } else {
                 String errMsg = "Fatal post error for " + postLocation + " Code: " + resultMap.get("code") + " Response: " + resultMap.get("result") + " JSON: " + JsonUtil.toJSON(json);
                 throw new Exception(errMsg);
@@ -155,7 +172,9 @@ public class WordPressAdapter {
         resultMap = wpc.uploadImage(mediaBaseEndpoint, imageSource, imageMimetype, imageName);
 
         if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
-            wpImageId = JsonUtil.getValue(resultMap.get("result"), "id");
+            String jsonResult = resultMap.get("result");
+            jsonResult = jsonResult.replace("{\"status\":\"ok\"}", "").trim();
+            wpImageId = JsonUtil.getValue(jsonResult, "id");
             mediaLocation = mediaBaseEndpoint + wpImageId;
 
             //Add first image as featured image for post
