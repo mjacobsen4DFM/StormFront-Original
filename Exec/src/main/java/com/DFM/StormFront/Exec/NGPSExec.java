@@ -142,6 +142,7 @@ public class NGPSExec {
                     String imageCredit = image.getCredit();
                     String imageCaption = image.getCaption();
                     String imageType = image.getMimetype();
+                    String cutlineExt = "txt";
 
                     if (imageType == null || imageType.equals("")) {
                         imageType = "jpg";
@@ -150,9 +151,9 @@ public class NGPSExec {
                     WebClient wc = new WebClient();
                     InputStream imageStream = wc.GetImageStream(imageSource, imageType);
 
-                    String imageName = base_file_name + "~" + imageCount + "." + imageType;
-                    String cutlineName = base_file_name + "~" + imageCount + "cl.txt";
-                    String cutlineText = String.format("<caption>%s</caption>\n<credit><i>%s / %s</i></credit>", imageCaption, imageCredit, story.getSiteName());
+                    String imageName = String.format("%1s~%2s.%3s", base_file_name, imageCount, imageType);
+                    String cutlineName = String.format("%1s~%2scl.%3s", base_file_name, imageCount, cutlineExt);
+                    String cutlineText = String.format("<caption>%1s</caption>\n<credit><i>%2s / %3s</i></credit>", imageCaption, imageCredit, story.getSiteName());
                     InputStream cutlineStream = StringUtil.toInputStream(cutlineText);
 
                     String imageSlug = StringUtil.hyphenateString(imageName);
