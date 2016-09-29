@@ -44,12 +44,13 @@ public class NGPSBolt extends BaseRichBolt {
         _redisClient = new RedisClient(_stormConf);
         //Get feed and article objects
         _contentKey = _tuple.getStringByField("contentKey");
+        _feedKey = _tuple.getStringByField("feedKey");
+        //RedisLogUtil.logInfo(String.format("NGPSBolt -> _contentKey: %s, _feedKey:  %s", _contentKey, _feedKey), _redisClient);
         _bNewChanged = _tuple.getBooleanByField("bNewChanged");
         _subscriberFeed = _tuple.getStringByField("subscriberFeed");
         _subscriberMap = (Map<String, String>) SerializationUtil.deserialize(_tuple.getBinaryByField("subscriberMap"));
         _sStory = _tuple.getStringByField("story");
         _subjectsXML = _tuple.getStringByField("subjectsXML");
-        _feedKey = _tuple.getStringByField("feedKey");
         _publisher = new Publisher(_tuple.getBinaryByField("publisher"));
         _keyArgs = new String[]{"delivered", _subscriberMap.get("type"), _subscriberMap.get("name"), _publisher.getSource(), _contentKey};
         _deliveredStoryKey = RedisContentUtil.setKey(_keyArgs);
