@@ -70,3 +70,6 @@ Resources/sources/*.*
 *.flattened-pom.xml
 .flattened-pom.xml
 zookeeper.out
+Audit/src/main/resources/config.properties
+Audit/pom.xml
+Audit/src/main/java/Tool.java
