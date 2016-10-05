@@ -110,6 +110,7 @@ public class WordPressExec {
         storyDataMap = this.getStoryData(_wpp, wppXML);
         ArrayList<Integer> categories = new ArrayList<>();
         ArrayList<Integer> tags = new ArrayList<>();
+        //ArrayList<Integer> sources = new ArrayList<>();
 
         operation = "Post() Checking isUpdated";
         if ((Boolean) storyDataMap.get("isUpdated")) {
@@ -145,6 +146,12 @@ public class WordPressExec {
             operation = "Post() Set Category";
             categories.addAll(this.setCats());
             _wpp.setCategories(categories);
+
+            /*
+            operation = "Post() Set Sources";
+            sources.add(Integer.valueOf(_subscriberMap.get("source_id")));
+            _wpp.setSources(sources);
+            */
 
             operation = "Post() Set Tags";
             tags.addAll(this.setTags());
