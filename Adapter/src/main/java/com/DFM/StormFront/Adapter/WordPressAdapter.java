@@ -154,6 +154,7 @@ public class WordPressAdapter {
         String imageDate;
         String wpImageId;
         String json;
+        String contentDisposition;
 
         //Extract image metadata
         wpPostid = JsonUtil.getValue(imageJson, "post_id");
@@ -169,7 +170,12 @@ public class WordPressAdapter {
         imageName = StringUtil.hyphenateString(imageName);
 
         //Upload the image
-        resultMap = wpc.uploadImage(mediaBaseEndpoint, imageSource, imageMimetype, imageName);
+        if(wpc.getVersion().equalsIgnoreCase("2.0-beta12.1")) {
+            contentDisposition= String.format("filename=%s", imageName);
+        } else {
+            contentDisposition= String.format("attachment; filename=%s", imageName);
+        }
+        resultMap = wpc.uploadImage(mediaBaseEndpoint, imageSource, imageMimetype, imageName, contentDisposition);
 
         if (WebClient.isOK(Integer.parseInt(resultMap.get("code").trim()))) {
             String jsonResult = resultMap.get("result");

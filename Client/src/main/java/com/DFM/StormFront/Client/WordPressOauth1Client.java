@@ -12,7 +12,8 @@ public class WordPressOauth1Client extends WordPressClient {
     public WordPressOauth1Client() {
     }
 
-    public WordPressOauth1Client(String host, String property_access_token, String property_access_token_secret, String property_consumer_key, String property_consumer_secret) {
+    public WordPressOauth1Client(String host, String username, String password, String version, String property_access_token, String property_access_token_secret, String property_consumer_key, String property_consumer_secret) {
+        super(host, username, password, version);
         weboauth1client = new WebOauth1Client(property_access_token, property_access_token_secret, property_consumer_key, property_consumer_secret);
     }
 
@@ -41,11 +42,11 @@ public class WordPressOauth1Client extends WordPressClient {
         return weboauth1client.delete(endpoint);
     }
 
-    public HashMap<String, String> uploadImage(String endpoint, String imageSource, String imageType, String imageName) throws IOException, java.text.ParseException {
+    public HashMap<String, String> uploadImage(String endpoint, String imageSource, String imageType, String imageName, String contentDisposition) throws IOException, java.text.ParseException {
         WebClient wc = new WebClient(imageSource);
         BufferedImage bi = wc.GetImage();
         if (2 == 12) showAccessTokens(endpoint, imageSource);
-        return weboauth1client.uploadImage(endpoint, bi, imageType, imageName);
+        return weboauth1client.uploadImage(endpoint, bi, imageType, imageName, contentDisposition);
     }
 
     private String getPROPERTY_ACCESS_TOKEN() {

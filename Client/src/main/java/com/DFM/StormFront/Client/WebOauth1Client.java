@@ -1,11 +1,11 @@
 package com.DFM.StormFront.Client;
 
 import com.DFM.StormFront.Util.LogUtil;
+import com.DFM.StormFront.Util.StringUtil;
 import org.glassfish.jersey.client.oauth1.AccessToken;
 import org.glassfish.jersey.client.oauth1.ConsumerCredentials;
 import org.glassfish.jersey.client.oauth1.OAuth1ClientSupport;
 import org.glassfish.jersey.jackson.JacksonFeature;
-//import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.client.Client;
@@ -20,6 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+
+//import org.glassfish.jersey.media.multipart.MultiPartFeature;
+
 
 /**
  * Created by Mick on 12/21/2015.
@@ -85,8 +88,11 @@ public class WebOauth1Client {
         return resultMap;
     }
 
-
     public HashMap<String, String> uploadImage(String uri, BufferedImage image, String imageType, String imageName) throws IOException, ParseException {
+        return uploadImage(uri, image, imageType, imageName, "");
+    }
+
+        public HashMap<String, String> uploadImage(String uri, BufferedImage image, String imageType, String imageName, String customDisposition) throws IOException, ParseException {
         Client client = buildClient();
 
         WebTarget target = client.target(uri);
@@ -95,18 +101,17 @@ public class WebOauth1Client {
         String formatName = (imageType.contains("/")) ? imageType.split("/")[1] : imageType;
         ImageIO.write(image, formatName, baos);
 
-        byte[] bits = baos.toByteArray();
+        String contentDisposition = String.format("attachment; filename=%s", imageName);
 
-/*
-        BodyPart body = new BodyPart(bits, MediaType.APPLICATION_OCTET_STREAM_TYPE);
-        MultiPart multiPartEntity = new MultiPart().bodyPart(body);
-        final Entity entity = Entity.entity(multiPartEntity, multiPartEntity.getMediaType());
-        //Request req = (Request) client.target(uri).request();
-*/
+        if(StringUtil.isNotNullOrEmpty(customDisposition)){
+            contentDisposition = customDisposition;
+        }
+
+        byte[] bits = baos.toByteArray();
 
         Response response = target.request()
                 .header("Content-Type", imageType)
-                .header("Content-Disposition", "filename=" + imageName)
+                .header("Content-Disposition", contentDisposition)
                 .header("Accept", "application/json")
                 .post(Entity.entity(bits, MediaType.APPLICATION_OCTET_STREAM_TYPE));
 

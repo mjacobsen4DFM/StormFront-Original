@@ -19,14 +19,16 @@ public class WordPressClient {
     private Integer timeout;
     private String username;
     private String password;
+    private String version;
 
     public WordPressClient() {
     }
 
-    public WordPressClient(String host, String username, String password) {
+    public WordPressClient(String host, String username, String password, String version) {
         this.host = host;
         this.username = username;
         this.password = password;
+        this.version = version;
     }
 
 
@@ -35,11 +37,11 @@ public class WordPressClient {
             if (2 == 12) {
                 LogUtil.log("DISCOVERED OAUTH: '" + subscriberMap.get("AM") + "'");
             }
-            return new WordPressOauth1Client(subscriberMap.get("url"), subscriberMap.get("AT"), subscriberMap.get("AS"), subscriberMap.get("CK"), subscriberMap.get("CS"));
+            return new WordPressOauth1Client(subscriberMap.get("url"), subscriberMap.get("stamp"), subscriberMap.get("validity"), subscriberMap.get("version"), subscriberMap.get("AT"), subscriberMap.get("AS"), subscriberMap.get("CK"), subscriberMap.get("CS"));
         } else if (subscriberMap.containsKey("AM") && subscriberMap.get("AM").equalsIgnoreCase("B")) {
             if (2 == 12)
                 LogUtil.log("DISCOVERED BASIC: '" + subscriberMap.get("AM").toUpperCase() + "'");
-            return new WordPressBasicClient(subscriberMap.get("url"), subscriberMap.get("stamp"), subscriberMap.get("validity"));
+            return new WordPressBasicClient(subscriberMap.get("url"), subscriberMap.get("stamp"), subscriberMap.get("validity"), subscriberMap.get("version"));
         } else {
             if (3 == 13) {
                 LogUtil.log("DISCOVERED NOTHING: '" + subscriberMap.get("AM").toUpperCase() + "'");
@@ -108,6 +110,11 @@ public class WordPressClient {
     }
 
     public HashMap<String, String> uploadImage(String endpoint, String imageSource, String imageType, String imageName) throws IOException, java.text.ParseException {
+        String function = "uploadImage(String endpoint, String imageSource, String imageType, String imageName, String customDisposition)";
+        return notImplemented(function);
+    }
+
+    public HashMap<String, String> uploadImage(String endpoint, String imageSource, String imageType, String imageName, String customDisposition) throws IOException, java.text.ParseException {
         String function = "uploadImage(String endpoint, String imageSource, String imageType, String imageName)";
         return notImplemented(function);
     }
@@ -130,5 +137,13 @@ public class WordPressClient {
         resultMap.put("code", Integer.toString(900));
         resultMap.put("result", function + " Not implemented in WordPressClient");
         return resultMap;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

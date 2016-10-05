@@ -30,8 +30,8 @@ public class WordPressBasicClient extends WordPressClient {
     public WordPressBasicClient() {
     }
 
-    public WordPressBasicClient(String host, String username, String password) {
-        super(host, username, password);
+    public WordPressBasicClient(String host, String username, String password, String version) {
+        super(host, username, password, version);
     }
 
     public HashMap<String, String> post(String endpoint, String json) throws IOException {
