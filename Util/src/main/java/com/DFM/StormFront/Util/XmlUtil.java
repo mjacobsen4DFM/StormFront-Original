@@ -27,6 +27,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.*;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -140,7 +141,16 @@ public class XmlUtil {
     public static String transform(String xmlString, String stylesheetPathname) throws Exception {
         try {
             TransformerFactory factory = TransformerFactory.newInstance();
-            Source stylesheetSource = new StreamSource(new File(stylesheetPathname).getAbsoluteFile());
+
+            Source stylesheetSource;
+
+            if (stylesheetPathname.startsWith("http")) {
+                URL url = new URL(stylesheetPathname);
+                stylesheetSource = new StreamSource(url.openStream());
+            } else {
+                stylesheetSource = new StreamSource(new File(stylesheetPathname).getAbsoluteFile());
+            }
+
             Transformer transformer = factory.newTransformer(stylesheetSource);
             Source inputSource = new StreamSource(new StringReader(xmlString));
             Writer outputWriter = new StringWriter();
@@ -193,14 +203,13 @@ public class XmlUtil {
     }
 
     public static String getFirstValue(Element parent, String nodeName) {
-        if(parent.getElementsByTagName(nodeName).getLength() > 0 ) {
+        if (parent.getElementsByTagName(nodeName).getLength() > 0) {
             try {
                 return parent.getElementsByTagName(nodeName).item(0).getFirstChild().getNodeValue();
             } catch (NullPointerException n) {
                 return "";
             }
-        }
-        else {
+        } else {
             return "";
         }
     }
@@ -224,7 +233,7 @@ public class XmlUtil {
     }
 
     private static void getAllElementsByTagNameNS(Element el, String nameSpaceURI, String localName,
-                                                   List<Element> elementList) {
+                                                  List<Element> elementList) {
 
         if (localName.equals(el.getLocalName()) && nameSpaceURI.contains(el.getNamespaceURI())) {
             elementList.add(el);
