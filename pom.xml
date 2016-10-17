@@ -48,8 +48,8 @@
         <module>Exec</module>
         <module>PubSubHub</module>
         <module>Interface</module>
-        <module>Audit</module>
         <!--
+        <module>Audit</module>
         <module>FixIt</module>
         <module>Test</module>
         -->
