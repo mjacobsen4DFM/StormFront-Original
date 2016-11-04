@@ -72,6 +72,7 @@ public class NGPSExec {
         storyDataMap = this.getStoryData(_story);
 
         operation = "Transform XML to Normalize";
+        _xsltRootPath = "http://delivery.digitalfirstmedia.com/interfaces/xslt/";
         String xsltPath = _xsltRootPath + this.publisher.getFeedType() + "_Story.xslt";
         String storyXML = XmlUtil.transform(_story, xsltPath);
 
@@ -86,7 +87,8 @@ public class NGPSExec {
         String base_file_name = remote_file_name.replace(".xml", "");
 
         operation = "Transform XML to NGPS";
-        xsltPath = FileUtil.getXsltDir() + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
+        xsltPath = _xsltRootPath + this.publisher.getFeedType() + "_" + _subscriberMap.get("type") + ".xslt";
+
         String ngpsXML = XmlUtil.transform(_story, xsltPath);
 
         FileUtil.printFile(FileUtil.getLogDir(),"Hubsync", id + "_xml", file_name.replace(".xml", ""), "xml", ngpsXML);

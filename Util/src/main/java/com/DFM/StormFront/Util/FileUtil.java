@@ -12,9 +12,9 @@ import java.util.*;
  * Created by Mick on 4/16/2016.
  */
 public class FileUtil {
-    public static String getXsltDir() {
+    public static String getXsltSourcePath(String location) {
         ResourceBundle config = ResourceBundle.getBundle("config");
-        return (SystemUtils.IS_OS_LINUX) ? config.getString("xsltDir_linux") : config.getString("xsltDir_windows");
+        return config.getString(xsltPath_name);
     }
 
     public static String getLogDir() {

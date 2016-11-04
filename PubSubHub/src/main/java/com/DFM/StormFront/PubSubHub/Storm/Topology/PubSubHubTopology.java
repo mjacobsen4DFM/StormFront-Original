@@ -77,7 +77,7 @@ public class PubSubHubTopology {
         conf.put("redisTimeout", Integer.toString(redisClient.getTimeout()));
         conf.put("redisPassword", redisClient.getPassword());
         conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
-        conf.put("xsltRootPath", FileUtil.getXsltDir());
+        conf.put("xsltRootPath", FileUtil.getXsltSourcePath(options.get("loc")));
 
         if(StringUtil.isNotNullOrEmpty(options.get("pubsearch"))) {
             logUtil.log(String.format("Setting Search: %s", options.get("pubsearch")), "topology.log");
@@ -107,7 +107,7 @@ public class PubSubHubTopology {
         conf.put("redisTimeout", Integer.toString(redisClient.getTimeout()));
         conf.put("redisPassword", redisClient.getPassword());
         conf.put("redisDatabase", Integer.toString(redisClient.getDatabase()));
-        conf.put("xsltRootPath", FileUtil.getXsltDir());
+        conf.put("xsltRootPath", FileUtil.getXsltSourcePath(options.get("loc")));
 
         if(StringUtil.isNotNullOrEmpty(options.get("pubsearch"))) {
             logUtil.log(String.format("Setting Search: %s", options.get("pubsearch")), "topology.log");
@@ -115,8 +115,6 @@ public class PubSubHubTopology {
         } else {
             logUtil.log("Setting Search: publishers:*", "topology.log");
             conf.put("publisherKeySearch", "publishers:AP:*");
-            //conf.put("publisherKeySearch", "publishers:blogs:www.heyreverb.com");
-            //conf.put("publisherKeySearch", "publishers:AP:AP-Online-National-News");
         }
 
         options.put("publisherKeySearch", conf.get("publisherKeySearch"));
