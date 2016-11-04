@@ -14,6 +14,7 @@ import java.util.*;
 public class FileUtil {
     public static String getXsltSourcePath(String location) {
         ResourceBundle config = ResourceBundle.getBundle("config");
+        String xsltPath_name = String.format("xsltPath_%s", location.toLowerCase());
         return config.getString(xsltPath_name);
     }
 
