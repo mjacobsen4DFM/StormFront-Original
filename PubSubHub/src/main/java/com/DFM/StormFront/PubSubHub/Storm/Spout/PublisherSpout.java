@@ -91,13 +91,18 @@ public class PublisherSpout extends BaseRichSpout {
         try {
             if (StringUtil.isNotNullOrEmpty(pubQueued)) {
                 MsgTracker msgTracker = new MsgTracker(pubQueued);
-                if(msgTracker.Ready()) {
+                if(msgTracker.Ready() && !msgTracker.key.contains(":Properties")) {
                     msgTracker.NewStart();
                     _pubKey = msgTracker.key;
+                    ArrayList<String> pubArray = StringUtil.DelimToArrayListStr(_pubKey, ":");
+                    pubArray.remove(pubArray.size() -1); //Remove feed name
+                    pubArray.remove(pubArray.size() -1); //Remove feed group name
+                    String pubRoot = String.join(":", pubArray);
                     _keys = _redisClient.hgetAll(_pubKey);
                     _keys.put("pubKey", _pubKey);
                     _keys.put("feedActive", _keys.get("active"));
-                    _keys.putAll(_redisClient.hgetAll(String.format("publishers:%s:Properties", _keys.get("source"))));
+                    String pubProperties = String.format("%s:Properties", pubRoot);
+                    _keys.putAll(_redisClient.hgetAll(pubProperties));
                     _keys.put("publisherActive", _keys.get("active"));
                     _publisher = new Publisher(_keys);
 

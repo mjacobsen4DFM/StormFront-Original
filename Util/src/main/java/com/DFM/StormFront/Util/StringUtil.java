@@ -75,35 +75,44 @@ public class StringUtil {
 	}
 
 	public static ArrayList<String> CSVtoArrayListStr(String csv) {
-		ArrayList<String> csvArrayList = new ArrayList<>();
-
-		if (csv != null) {
-			String[] splitData = csv.split("\\s*,\\s*");
-			for (String aSplitData : splitData) {
-				if (!(aSplitData == null) || !(aSplitData.length() == 0)) {
-					csvArrayList.add(aSplitData.trim());
-				}
-			}
-		}
-
-		return csvArrayList;
+		return DelimToArrayListStr(csv, ",");
 	}
 
 	public static ArrayList<Integer> CSVtoArrayListInt(String csv) {
-		ArrayList<Integer> csvArrayList = new ArrayList<>();
+		return DelimToArrayListInt(csv, ",");
+	}
 
-		if (csv != null) {
-			String[] splitData = csv.split("\\s*,\\s*");
+	public static ArrayList<String> DelimToArrayListStr(String delimStr, String delim) {
+		ArrayList<String> delimArrayList = new ArrayList<>();
+
+		if (delimStr != null) {
+			String[] splitData = delimStr.split(String.format("\\s*%s\\s*", delim));
 			for (String aSplitData : splitData) {
 				if (!(aSplitData == null) || !(aSplitData.length() == 0)) {
-					csvArrayList.add(Integer.parseInt(aSplitData.trim()));
+					delimArrayList.add(aSplitData.trim());
 				}
 			}
 		}
 
-		return csvArrayList;
+		return delimArrayList;
 	}
 
+
+
+	public static ArrayList<Integer> DelimToArrayListInt(String delimStr, String delim) {
+		ArrayList<Integer> delimArrayList = new ArrayList<>();
+
+		if (delimStr != null) {
+			String[] splitData = delimStr.split(String.format("\\s*%s\\s*", delim));
+			for (String aSplitData : splitData) {
+				if (!(aSplitData == null) || !(aSplitData.length() == 0)) {
+					delimArrayList.add(Integer.parseInt(aSplitData.trim()));
+				}
+			}
+		}
+
+		return delimArrayList;
+	}
     public static String getErrorInfo(Exception e) {
         return "error: " + e + ", message: " + e.getMessage() + ", StackTrace: " + Arrays.toString(e.getStackTrace());
 	}
