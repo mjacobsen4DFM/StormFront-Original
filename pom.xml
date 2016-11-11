@@ -31,9 +31,9 @@
         <Appliance.Model.version>0.4.3.5</Appliance.Model.version>
         <Appliance.Client.version>0.2.8.3</Appliance.Client.version>
         <Appliance.Adapter.version>0.2.5.0</Appliance.Adapter.version>
-        <Appliance.Exec.version>0.1.16.3</Appliance.Exec.version>
-        <Appliance.PubSubHub.version>0.10.16.1</Appliance.PubSubHub.version>
-        <Appliance.Interface.version>0.5.5.3</Appliance.Interface.version>
+        <Appliance.Exec.version>0.1.16.4</Appliance.Exec.version>
+        <Appliance.PubSubHub.version>0.10.17.0</Appliance.PubSubHub.version>
+        <Appliance.Interface.version>0.5.5.4</Appliance.Interface.version>
         <!--
                 <Appliance.FixIt.version>0.1.1</Appliance.FixIt.version>
                 <Appliance.Test.version>0.2.5</Appliance.Test.version>
